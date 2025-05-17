@@ -17,56 +17,156 @@ This document outlines the plan for developing the backend of the Digital Kudos 
 
 ## Development Phases
 
-### Phase 1: Setup & Core Infrastructure
+### Phase 1: Setup & Core Infrastructure (Basic Express Focus)
 
-1.  **Environment Configuration (`dotenv`, `pino`)**
-    *   Set up `.env` for `DATABASE_URL`, `JWT_SECRET`, `PORT`, etc.
-    *   Initialize `pino` for structured logging. Configure `pino-pretty` for development.
-    *   Create `src/config/index.ts` to load and export configurations.
-    *   Create `src/utils/logger.ts` to export a pre-configured `pino` instance.
+1.  **Initial Project & Express Server Setup (`express`, `typescript`, `dotenv`, `cors`)**
+    *   Verify `package.json`: Ensure it exists and core dependencies like `express`, `typescript`, `ts-node` (or `ts-node-dev`), `@types/express`, `@types/node`, `dotenv`, `cors`, `@types/cors` are listed and installed. Add any missing ones.
+    *   Verify `tsconfig.json`: Ensure it exists and is correctly configured (e.g., `outDir: "./dist"`, `rootDir: "./src"`, `esModuleInterop: true`, `moduleResolution: "node"`). Adjust as necessary.
+    *   Create/Update `.env` file: Ensure it exists and contains at least an initial `PORT` (e.g., `PORT=3000`).
+    *   Create `src/` directory if it doesn't exist.
+    *   Create `src/server.ts` (if it doesn't exist or is incomplete):
+        *   Import `express`, `cors`, `dotenv`.
+        *   Call `dotenv.config()` at the top.
+        *   Initialize the Express app: `const app = express();`.
+        *   Apply `cors()` middleware: `app.use(cors());`.
+        *   Add body parsing middleware: `app.use(express.json());`.
+        *   Add a health check endpoint (e.g., `GET /health` that returns a 200 status).
+        *   Start the server using the port from `.env` or a default: `const port = process.env.PORT || 3001; app.listen(port, () => console.log(\`Server running on port ${port}\`));` (logging will be improved in the next step).
+    *   Verify/Configure `build` script in `package.json` (e.g., `"build": "tsc"` or `"build": "rimraf ./dist && tsc"`). Install `rimraf` if used.
+    *   Verify/Configure `dev` script in `package.json` (e.g., `"dev": "ts-node-dev --respawn --transpile-only src/server.ts"` or `"dev": "nodemon src/server.ts"`). Ensure `ts-node-dev` or `nodemon` with `ts-node` is set up.
+    *   Ensure `npm run build` and `npm run dev` scripts work and the server is accessible.
 
-2.  **Prisma Schema & Initial Migration (`prisma`, `pg`)**
-    *   Define models in `prisma/schema.prisma`:
+2.  **Logging Integration (`pino`)**
+    *   Verify/Install logging dependencies: `pino`, `pino-pretty` (for development). Add to `package.json` if missing.
+    *   Create `src/shared/` directory if it doesn't exist.
+    *   Create `src/shared/logger.ts` (if it doesn't exist or is incomplete) to export a pre-configured `pino` instance.
+        *   Configure `pino-pretty` for development environment logs.
+        *   Example basic logger setup:
+            ```typescript
+            // src/shared/logger.ts
+            import pino from 'pino';
+            // Potentially import config for log level if not done via process.env directly
+            // import config from '../config'; // if config.ts is in src/config/
+
+            const logger = pino({
+              transport: process.env.NODE_ENV === 'development' ? { target: 'pino-pretty' } : undefined,
+              // level: config.logLevel || process.env.LOG_LEVEL || 'info', // Example using config
+              level: process.env.LOG_LEVEL || 'info', // Simpler: rely on .env
+            });
+
+            export default logger;
+            ```
+    *   Integrate basic logging in `src/server.ts`:
+        *   Import the logger (e.g., `import logger from './shared/logger';`).
+        *   Replace `console.log` for server start with `logger.info(\`Server running on port ${port}\`);`.
+        *   (Optional) Add a simple request logging middleware using the logger.
+
+3.  **Expanded Environment & Configuration Management**
+    *   Update `.env`: Ensure it includes `DATABASE_URL`, `JWT_SECRET`, and `LOG_LEVEL` (e.g., `DATABASE_URL="postgresql://user:password@localhost:5432/mydb?schema=public"`, `JWT_SECRET="your-secret-key"`, `LOG_LEVEL="info"`).
+    *   Create `src/config/` directory if it doesn't exist.
+    *   Create `src/config/index.ts` (if it doesn't exist or is incomplete) to load, (optionally validate), and export configurations.
+        *   Example structure:
+            ```typescript
+            import dotenv from 'dotenv';
+
+            dotenv.config(); // Ensure .env is read
+
+            const config = {
+              port: process.env.PORT || '3001',
+              databaseUrl: process.env.DATABASE_URL,
+              jwtSecret: process.env.JWT_SECRET,
+              nodeEnv: process.env.NODE_ENV || 'development',
+              logLevel: process.env.LOG_LEVEL || 'info',
+              // Add other configurations as needed
+            };
+
+            // Optional: Add validation logic here for critical variables
+            if (!config.databaseUrl && config.nodeEnv !== 'test' && config.nodeEnv !== 'development') {
+              // Allow missing DB URL in dev/test for initial setup without DB
+              console.error("FATAL ERROR: DATABASE_URL is not set in production.");
+              // process.exit(1); // Consider exiting in production
+            }
+            if (!config.jwtSecret && config.nodeEnv !== 'test') {
+              console.error("FATAL ERROR: JWT_SECRET is not set.");
+              // process.exit(1);
+            }
+
+            export default config;
+            ```
+    *   Refactor `src/server.ts` and `src/shared/logger.ts` to use the centralized configuration from `src/config/index.ts` (e.g., `config.port`, `config.logLevel`, `config.nodeEnv`). (Note: The logger example above already refers to `process.env.LOG_LEVEL` or `config.logLevel`).
+
+4.  **Database Setup with Prisma (`prisma`, `pg`)**
+    *   Verify/Install database and ORM dependencies: `prisma`, `pg`. Add to `package.json` if missing.
+    *   Verify Prisma setup: The `prisma/` directory and `prisma/schema.prisma` file should exist. If `prisma init` was not run, do so: `npx prisma init --datasource-provider postgresql` and ensure `DATABASE_URL` in `.env` is correctly picked up or set.
+    *   Define/Update models in `prisma/schema.prisma` as per the original plan:
         *   `User`: `id`, `email`, `password`, `role` (Enum: `TeamMember`, `TechLead`, `Admin`), `createdAt`, `updatedAt`.
         *   `Team`: `id`, `name`, `createdAt`, `updatedAt`.
         *   `Category`: `id`, `name`, `createdAt`, `updatedAt`.
         *   `Kudo`: `id`, `message`, `recipientName`, `createdAt`, `updatedAt`.
         *   Define relations: `Kudo` to `User` (giver), `Team`, `Category`.
-    *   Run initial migration:
+    *   Run/Verify initial migration to create tables in the database:
         ```bash
         npx prisma migrate dev --name init
         ```
-    *   Generate Prisma Client:
+        (If models/migrations already exist, this might be a different migration or already completed. Adapt as needed.)
+    *   Generate/Regenerate Prisma Client based on your schema:
         ```bash
         npx prisma generate
         ```
+    *   (Optional but recommended) Create/Verify a Prisma client instance export (e.g., `src/db.ts` or `src/prismaClient.ts`):
+        ```typescript
+        // src/prismaClient.ts
+        import { PrismaClient } from '@prisma/client';
 
-3.  **Basic Express Server Setup (`express`, `cors`, `typescript`)**
-    *   Create `src/server.ts` to initialize the Express app.
-    *   Apply `cors` middleware: `app.use(cors());`
-    *   Add body parsing middleware: `app.use(express.json());`
-    *   Add a health check endpoint (e.g., `GET /health`).
-    *   Ensure `tsconfig.json` is configured (e.g., `outDir: "./dist"`).
-    *   Verify `npm run build` and `npm run dev` scripts.
+        // Optional: Add logging or other Prisma Client extensions if needed
+        const prisma = new PrismaClient({
+          log: process.env.NODE_ENV === 'development' ? ['query', 'info', 'warn', 'error'] : ['warn', 'error'],
+        });
+
+        export default prisma;
+        ```
 
 ### Phase 2: Authentication & User Management
 
 4.  **Authentication Module (`bcrypt`, `jsonwebtoken`, `passport`, `passport-jwt`, `zod`, `prisma`)**
-    *   **Directory:** `src/modules/auth/`
-    *   **Validation (`auth.validation.ts`):** Zod schemas for registration (`UserCreateInput`) and login (`UserLoginInput`) request bodies.
-    *   **Service (`auth.service.ts`):**
-        *   `registerUser(data: UserCreateInput)`: Hash password with `bcrypt`, save user using Prisma Client (default role: `TeamMember`).
-        *   `loginUser(data: UserLoginInput)`: Find user by email, compare password with `bcrypt.compare()`, generate JWT using `jsonwebtoken.sign()`.
-    *   **Controller (`auth.controller.ts`):**
-        *   Route handlers for `POST /auth/register` and `POST /auth/login`.
-        *   Use a validation middleware (see Phase 5) with Zod schemas.
+    *   **Directory Structure:** `src/modules/auth/`
+        *   `domain/`:
+            *   `entities/User.ts` (Leverage Prisma generated types or define explicit domain entity if complex behavior is added)
+            *   `interfaces/IUserRepository.ts` (Interface for user data operations)
+        *   `application/`:
+            *   `useCases/registerUser/`:
+                *   `RegisterUserUseCase.ts` (Handles registration logic: hash password, save user with default role)
+                *   `RegisterUserRequestDto.ts` (Zod schema for registration input)
+                *   `RegisterUserResponseDto.ts` (Defines registration output, e.g., user info without password)
+            *   `useCases/loginUser/`:
+                *   `LoginUserUseCase.ts` (Handles login logic: find user, compare password, generate JWT)
+                *   `LoginUserRequestDto.ts` (Zod schema for login input)
+                *   `LoginUserResponseDto.ts` (Defines login output, e.g., user info and JWT)
+            *   `dtos/` (Shared DTOs for the auth module if any, or keep them specific to use cases)
+        *   `presentation/`:
+            *   `controllers/auth.controller.ts` (Route handlers for `/register` and `/login`, calls use cases)
+            *   `routes/auth.routes.ts` (Defines `POST /auth/register` and `POST /auth/login` routes)
+            *   `validation/` (Contains Zod schemas imported by DTOs or used directly by validation middleware)
+        *   `infrastructure/`:
+            *   `repositories/UserPrismaRepository.ts` (Implements `IUserRepository` using Prisma Client)
     *   **Passport JWT Strategy (`src/middleware/auth.middleware.ts` or `src/config/passport.ts`):**
         *   Configure `passport-jwt` strategy to extract JWT from `Authorization: Bearer <token>` header.
         *   Create `authenticateJwt` middleware using `passport.authenticate('jwt', { session: false })`.
     *   **User Roles & Management (Admin):**
-        *   Directory: `src/modules/users/` (or extend auth)
-        *   Service method to update user role.
-        *   Controller for `PUT /users/{userId}/role` (Admin only).
+        *   **Directory Structure:** `src/modules/users/`
+            *   `domain/`:
+                *   (Potentially share `User.ts` entity and `IUserRepository.ts` from `auth` module or define specific admin-related interfaces if needed)
+            *   `application/`:
+                *   `useCases/updateUserRole/`:
+                    *   `UpdateUserRoleUseCase.ts` (Handles logic to update a user's role)
+                    *   `UpdateUserRoleRequestDto.ts` (Input: `userId`, `newRole`)
+                    *   `UpdateUserRoleResponseDto.ts` (Output: updated user info)
+            *   `presentation/`:
+                *   `controllers/users.controller.ts` (Route handler for `PUT /users/{userId}/role`)
+                *   `routes/users.routes.ts` (Defines the route, protected by `authenticateJwt` and `authorizeRole(['Admin'])`)
+                *   `validation/` (Zod schemas for request parameters/body)
+            *   `infrastructure/`:
+                *   (Likely uses the same `UserPrismaRepository.ts` from `auth` module)
         *   Create `authorizeRole(['Admin'])` middleware. This middleware should:
             1.  Come *after* `authenticateJwt`.
             2.  Check `req.user.role` against the allowed roles.
@@ -74,73 +174,95 @@ This document outlines the plan for developing the backend of the Digital Kudos 
 
 ### Phase 3: Core Feature Modules (Layered Architecture)
 
-**General Module Structure (e.g., for `src/modules/kudos/`)**
+**General Clean Architecture Module Structure (e.g., for `src/modules/kudos/`)**
 
-*   **`kudos.model.ts` (or use Prisma generated types):** TypeScript interfaces/types for Kudo objects, API payloads.
-*   **`kudos.validation.ts` (`zod`):** Zod schemas for request validation (e.g., kudo creation payload, query parameters).
-*   **`kudos.repository.ts` (`@prisma/client`):**
-    *   Handles all database interactions using Prisma Client.
-    *   Example functions: `create(data)`, `findById(id)`, `findAll(params)`, `update(id, data)`, `delete(id)`.
-*   **`kudos.service.ts`:**
-    *   Contains business logic.
-    *   Calls repository methods.
-    *   Handles authorization logic specific to the module (e.g., checking if user is Tech Lead/Admin for kudo creation).
-*   **`kudos.controller.ts` (`express`):**
-    *   Defines Express route handlers.
-    *   Uses validation middleware (for body, params, query).
-    *   Calls appropriate service methods.
-    *   Formats and sends HTTP responses (data and status codes).
-*   **`kudos.routes.ts` (`express`):**
-    *   Defines an Express `Router` for the module (e.g., `kudosRouter`).
-    *   Applies `authenticateJwt` and relevant `authorizeRole` middleware.
-    *   Mount this router in `src/server.ts` or `src/routes/index.ts`.
+*   **`src/modules/[ModuleName]/domain/`**
+    *   `entities/`: Core business objects (e.g., `Kudo.ts`). Can leverage Prisma types or be custom classes with logic.
+    *   `interfaces/repositories/`: Repository interfaces (e.g., `IKudoRepository.ts`) defining data access contracts.
+    *   `(optional) services/`: Domain services for logic spanning multiple entities or complex rules.
+    *   `(optional) valueObjects/`: Value objects (e.g., `MessageContent.ts`).
+*   **`src/modules/[ModuleName]/application/`**
+    *   `useCases/[useCaseName]/`: Each use case gets its own folder.
+        *   `[UseCaseName]UseCase.ts`: Implements a specific application task (e.g., `CreateKudoUseCase.ts`).
+        *   `[UseCaseName]RequestDto.ts`: Defines the input data structure for the use case, often using Zod for validation.
+        *   `[UseCaseName]ResponseDto.ts`: Defines the output data structure.
+    *   `(optional) services/`: Application services for broader tasks or orchestration.
+    *   `dtos/`: Shared DTOs for the module, or DTOs can live within their respective use case folders.
+*   **`src/modules/[ModuleName]/presentation/`**
+    *   `controllers/`: Express route handlers (e.g., `kudos.controller.ts`). They call application use cases.
+    *   `routes/`: Express router definitions (e.g., `kudos.routes.ts`). Applies middleware like `authenticateJwt`, `authorizeRole`, and validation.
+    *   `validation/`: Zod schemas for request validation (body, params, query), used by DTOs or validation middleware.
+    *   `(optional) mappers/`: For transforming data between presentation DTOs and application DTOs if needed.
+*   **`src/modules/[ModuleName]/infrastructure/`**
+    *   `repositories/`: Concrete repository implementations using Prisma (e.g., `KudoPrismaRepository.ts` implementing `IKudoRepository.ts`).
+    *   `(optional) mappers/`: For transforming data between domain entities and Prisma models if complex.
 
 5.  **Teams Module (`src/modules/teams/`)**
-    *   Follow the general module structure.
-    *   **Endpoints:**
-        *   `POST /teams` (Admin): Create team (body: `{ name: string }`).
-        *   `GET /teams`: List all teams (for dropdowns, Admin management).
+    *   Follow the General Clean Architecture Module Structure.
+    *   **Domain:** `Team` entity, `ITeamRepository` interface.
+    *   **Application:**
+        *   `CreateTeamUseCase` (Input: `{ name: string }`)
+        *   `ListTeamsUseCase`
+        *   `UpdateTeamUseCase`
+        *   `DeleteTeamUseCase`
+    *   **Presentation:** Controllers and routes for:
+        *   `POST /teams` (Admin): Create team.
+        *   `GET /teams`: List all teams.
         *   `PUT /teams/{teamId}` (Admin): Update team.
-        *   `DELETE /teams/{teamId}` (Admin): Delete team (consider cascading or disallowing if kudos are linked).
-    *   Service methods should interact with `prisma.team`.
+        *   `DELETE /teams/{teamId}` (Admin): Delete team.
+    *   **Infrastructure:** `TeamPrismaRepository` implementing `ITeamRepository`.
 
 6.  **Categories Module (`src/modules/categories/`)**
-    *   Follow the general module structure.
-    *   **Endpoints:**
-        *   `POST /categories` (Tech Lead, Admin): Create category (body: `{ name: string }`).
+    *   Follow the General Clean Architecture Module Structure.
+    *   **Domain:** `Category` entity, `ICategoryRepository` interface.
+    *   **Application:**
+        *   `CreateCategoryUseCase` (Input: `{ name: string }`)
+        *   `ListCategoriesUseCase`
+        *   `UpdateCategoryUseCase`
+        *   `DeleteCategoryUseCase`
+    *   **Presentation:** Controllers and routes for:
+        *   `POST /categories` (Tech Lead, Admin): Create category.
         *   `GET /categories`: List all categories.
         *   `PUT /categories/{categoryId}` (Admin): Update category.
         *   `DELETE /categories/{categoryId}` (Admin): Delete category.
-    *   Service methods should interact with `prisma.category`.
+    *   **Infrastructure:** `CategoryPrismaRepository` implementing `ICategoryRepository`.
 
 7.  **Kudos Module (`src/modules/kudos/`)**
-    *   Follow the general module structure.
-    *   **Endpoints:**
-        *   `POST /kudos` (Tech Lead, Admin): Create kudo (body: `{ recipientName: string, teamId: string, categoryId: string, message: string }`). The giver is `req.user.id`.
-        *   `GET /kudos`: Get all kudos.
-            *   Query params for filtering: `recipientName?: string`, `teamId?: string`, `categoryId?: string`.
-            *   Query param for searching: `searchTerm?: string` (search across `recipientName`, `team.name`, `category.name`).
-            *   Query param for sorting: `sortBy=recent|oldest` (default: `recent`).
-    *   Repository `findAll` method needs to implement complex Prisma query with conditional `where` clauses and `orderBy`.
+    *   Follow the General Clean Architecture Module Structure.
+    *   **Domain:** `Kudo` entity, `IKudoRepository` interface. Giver is `userId` from authenticated user.
+    *   **Application:**
+        *   `CreateKudoUseCase` (Input: `{ recipientName: string, teamId: string, categoryId: string, message: string }`, `giverId` from `req.user`)
+        *   `ListKudosUseCase` (Handles filtering, searching, sorting based on query params)
+            *   `ListKudosRequestDto` to capture query params: `recipientName?: string`, `teamId?: string`, `categoryId?: string`, `searchTerm?: string`, `sortBy=recent|oldest`.
+    *   **Presentation:** Controllers and routes for:
+        *   `POST /kudos` (Tech Lead, Admin): Create kudo.
+        *   `GET /kudos`: Get all kudos with filtering, searching, and sorting.
+    *   **Infrastructure:** `KudoPrismaRepository` implementing `IKudoRepository`. Its `findAll` method needs to implement complex Prisma query with conditional `where` clauses and `orderBy`.
 
 8.  **Analytics Module (`src/modules/analytics/`, `date-fns`)**
-    *   Follow the general module structure (mostly service and controller).
-    *   Use `date-fns` for calculating date ranges for period filters (`weekly`, `monthly`, `quarterly`, `yearly`).
-    *   **Endpoints (All GET, viewable by all logged-in users):**
-        *   `/analytics/top-recognitions?period=<period>`:
+    *   Follow the General Clean Architecture Module Structure. May rely on repositories from other modules or have its own read-optimized data views/repositories.
+    *   Use `date-fns` for date calculations within Application Layer use cases.
+    *   **Domain:** May not have its own rich domain entities if primarily aggregating data. Could define interfaces for analytics data structures.
+    *   **Application:**
+        *   `GetTopRecognitionsUseCase` (Input: `period=<period>`)
             *   Returns: `{ topIndividuals: [{ name: string, count: number }], topTeams: [{ name: string, count: number }] }`.
-            *   Service logic: Use Prisma `groupBy` and `count` on Kudos, filtered by date range.
-        *   `/analytics/trending-words?period=<period>`:
+            *   Logic: Use Prisma `groupBy` and `count` on Kudos, filtered by date range. This will involve calling `IKudoRepository`.
+        *   `GetTrendingWordsUseCase` (Input: `period=<period>`)
             *   Returns: `{ trendingWords: [{ word: string, count: number }] }`.
-            *   Service logic: Fetch Kudos messages, tokenize, remove stop-words (simple array of common words), count frequencies.
-        *   `/analytics/trending-categories?period=<period>`:
+            *   Logic: Fetch Kudo messages (via `IKudoRepository`), tokenize, remove stop-words, count frequencies.
+        *   `GetTrendingCategoriesUseCase` (Input: `period=<period>`)
             *   Returns: `{ trendingCategories: [{ name: string, count: number }] }`.
-            *   Service logic: Use Prisma `groupBy` `categoryId` and `count` on Kudos, filtered by date range.
+            *   Logic: Use Prisma `groupBy` `categoryId` and `count` on Kudos (via `IKudoRepository`), filtered by date range.
+    *   **Presentation:** Controllers and routes for (All GET, viewable by all logged-in users):
+        *   `/analytics/top-recognitions?period=<period>`
+        *   `/analytics/trending-words?period=<period>`
+        *   `/analytics/trending-categories?period=<period>`
+    *   **Infrastructure:** May not have its own dedicated repositories if it reuses existing ones (e.g., `KudoPrismaRepository`). If it had specialized views or tables, it would have its own.
 
 ### Phase 4: Testing, Refinement & SOPs
 
 9.  **Automated Testing (`jest`, `ts-jest`)**
-    *   Write unit tests for service methods (mock repositories and dependencies).
+    *   Write unit tests for Application Layer use cases (mock repository interfaces and other dependencies).
     *   Write integration tests for API endpoints (use a separate test database or Prisma mocking solution).
         *   Test cases for successful operations, validation errors, authorization errors.
     *   Focus on PRD requirements: kudos creation, retrieval, filtering, authentication, analytics.
@@ -173,7 +295,7 @@ This document outlines the plan for developing the backend of the Digital Kudos 
         npm run format
         # npm run test # Optional: can slow down commits
         ```
-    *   Document coding standards (naming conventions, file organization as outlined here) in a `CONTRIBUTING.md` or similar.
+    *   Document coding standards (naming conventions, file organization as outlined here reflecting Clean Architecture) in a `CONTRIBUTING.md` or similar.
 
 12. **Deployment Preparation**
     *   Create/Refine `Dockerfile` for containerization.
@@ -187,12 +309,12 @@ Create `src/routes/index.ts`:
 
 ```typescript
 import { Router } from 'express';
-import authRoutes from '../modules/auth/auth.routes';
-import userRoutes from '../modules/users/user.routes'; // If user management is separate
-import teamRoutes from '../modules/teams/team.routes';
-import categoryRoutes from '../modules/categories/category.routes';
-import kudoRoutes from '../modules/kudos/kudo.routes';
-import analyticsRoutes from '../modules/analytics/analytics.routes';
+import authRoutes from '../modules/auth/presentation/routes/auth.routes';
+import userRoutes from '../modules/users/presentation/routes/users.routes'; // If user management is separate
+import teamRoutes from '../modules/teams/presentation/routes/team.routes';
+import categoryRoutes from '../modules/categories/presentation/routes/category.routes';
+import kudoRoutes from '../modules/kudos/presentation/routes/kudo.routes';
+import analyticsRoutes from '../modules/analytics/presentation/routes/analytics.routes';
 
 const router = Router();
 
