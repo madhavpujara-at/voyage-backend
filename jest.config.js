@@ -8,7 +8,7 @@ module.exports = {
   ],
   transform: {
     '^.+\.(ts|tsx)$': ['ts-jest', { // or other TypeScript transformer
-      tsconfig: 'tsconfig.json'
+      tsconfig: 'tsconfig.test.json'
     }]
   },
   moduleNameMapper: {

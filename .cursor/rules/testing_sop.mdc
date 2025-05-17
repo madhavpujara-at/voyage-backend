@@ -1,0 +1,142 @@
+---
+description: The rule effectively explains when to use it: When creating or modifying tests When setting up testing infrastructure When implementing test coverage When working with mocking strategies When implementing integration tests When troubleshooting tests It provides a comprehensive guide to the project's testing standards, including directory structure, naming conventions, and best practices for different types of tests.
+globs: 
+alwaysApply: false
+---
+# Testing Standards
+
+This rule covers the standard testing practices for the application using Jest and TypeScript.
+
+## Directory Structure
+
+```
+tests/
+├── unit/
+│   └── modules/
+│       └── [ModuleName]/
+│           └── [Component]/
+│               └── [ComponentName].test.ts
+├── integration/
+│   ├── [ModuleName]/
+│   │   └── [Feature].integration.test.ts
+│   └── testUtils.ts
+└── e2e/  # (If applicable)
+```
+
+## File Naming Conventions
+
+- Unit tests: `[ComponentName].test.ts`
+- Integration tests: `[Feature].integration.test.ts`
+- End-to-end tests: `[Feature].e2e.test.ts`
+
+## Testing Best Practices
+
+### Unit Testing
+
+- Test components in isolation
+- Mock all dependencies
+- Focus on both success and error cases
+- Use descriptive test names
+- Follow AAA pattern (Arrange, Act, Assert)
+
+### Integration Testing
+
+- Test how components work together
+- Test API routes end-to-end
+- Verify authentication flows
+- Test database interactions
+
+### Mocking
+
+- Use `jest.mock()` for modules
+- Use `jest.fn()` for functions
+- Use `jest-mock-extended` for interfaces
+
+### Test Data
+
+- Create factory functions for test data
+- Use minimal data needed for tests
+- Use descriptive variable names
+
+## Test Coverage
+
+- Minimum coverage: 80% for application layer
+- 100% coverage for critical business logic
+- All API endpoints must have integration tests
+
+## Example Structure
+
+A typical unit test follows this format:
+
+```typescript
+describe('ComponentName', () => {
+  let component: ComponentName;
+  let mockDependency: jest.Mocked<IDependency>;
+  
+  beforeEach(() => {
+    // Setup mocks and component instance
+    mockDependency = {
+      method: jest.fn(),
+    };
+    
+    component = new ComponentName(mockDependency);
+  });
+  
+  it('should do something specific', async () => {
+    // Arrange
+    mockDependency.method.mockResolvedValue(someValue);
+    
+    // Act
+    const result = await component.methodToTest(input);
+    
+    // Assert
+    expect(mockDependency.method).toHaveBeenCalledWith(expectedParam);
+    expect(result).toBe(expectedOutput);
+  });
+});
+```
+
+For more details, see the complete [Testing SOP document](mdc:sop/testing_sop.md).
+
+This rule, testing_sop.mdc, should be referenced when working on any testing-related tasks for the Digital Kudos Wall backend application. Specifically, use this rule when:
+
+1. Creating new tests for any layer (Domain, Application, Infrastructure, Presentation)
+2. Modifying existing test cases or test utilities
+3. Setting up testing infrastructure for a new module or feature
+4. Trying to understand the project's testing conventions and standards
+5. Implementing test coverage for specific components
+6. Working with mocking strategies for dependencies
+7. Implementing integration tests for API endpoints
+8. Setting up test data factories or test utilities
+9. Configuring test environments or continuous integration for tests
+10. Troubleshooting test failures or flaky tests
+
+This rule provides comprehensive guidance on:
+- Testing tools and libraries used in the project
+- Directory structure and file naming conventions
+- Specific testing approaches for each architectural layer
+- Mocking best practices and test data management
+- Coverage requirements and CI integration
+
+For complete details and examples, refer to the full document at `sop/testing_sop.md`.
+
+Example test structure:
+```typescript
+describe('ComponentName', () => {
+  // Setup code with mocks and dependencies
+  
+  beforeEach(() => {
+    // Initialize component and dependencies
+  });
+  
+  it('should perform the expected behavior in normal conditions', async () => {
+    // Arrange - set up test state
+    // Act - call the method being tested
+    // Assert - verify expected outcomes
+  });
+  
+  it('should handle error scenarios appropriately', async () => {
+    // Test error handling
+  });
+});
+```

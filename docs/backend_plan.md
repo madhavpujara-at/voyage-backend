@@ -340,7 +340,7 @@ In `src/server.ts`:
 // ... other imports
 import mainRouter from './routes';
 // ...
-app.use('/api/v1', mainRouter); // Prefix all routes with /api/v1
+app.use("/api", mainRouter); // Prefix all routes with /api
 // ... global error handler
 ```
 

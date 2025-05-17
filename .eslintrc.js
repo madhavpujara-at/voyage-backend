@@ -9,7 +9,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: 'module',
-    project: './tsconfig.json', // Important for some TS-specific rules
+    project: ['./tsconfig.json', './tsconfig.test.json'], // Include test config
   },
   env: {
     node: true,

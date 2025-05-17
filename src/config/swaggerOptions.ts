@@ -15,7 +15,7 @@ const swaggerOptions = {
     },
     servers: [
       {
-        url: "http://localhost:3000/api", // Adjusted: Removed /v1 to match server.ts
+        url: "http://localhost:3000/api", // Adjusted: Removed  to match server.ts
         description: "Development server",
       },
       {

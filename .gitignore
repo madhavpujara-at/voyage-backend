@@ -5,3 +5,4 @@ dist
 openapi-spec.json
 generated
 API_DOCUMENTATION.md
+coverage
