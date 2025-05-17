@@ -7,8 +7,8 @@ import { UserRole } from "../../../auth/domain/entities/User";
  */
 export const UpdateUserRoleSchema = z.object({
   userId: z.string().uuid("Invalid user ID format"),
-  newRole: z.enum([UserRole.TECH_LEAD] as const, {
-    errorMap: () => ({ message: "Role must be : TECH_LEAD" }),
+  newRole: z.enum([UserRole.TEAM_MEMBER, UserRole.TECH_LEAD, UserRole.ADMIN] as const, {
+    errorMap: () => ({ message: "Role must be one of: TEAM_MEMBER, TECH_LEAD, ADMIN" }),
   }),
 });
 

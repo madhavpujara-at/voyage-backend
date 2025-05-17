@@ -49,6 +49,21 @@ const usersController = new UsersController(updateUserRoleUseCase);
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/UpdateUserRoleInput'
+ *           example:
+ *             newRole: "TECH_LEAD"
+ *           examples:
+ *             teamMember:
+ *               summary: Set user as team member
+ *               value:
+ *                 newRole: "TEAM_MEMBER"
+ *             techLead:
+ *               summary: Set user as tech lead
+ *               value:
+ *                 newRole: "TECH_LEAD"
+ *             admin:
+ *               summary: Set user as admin
+ *               value:
+ *                 newRole: "ADMIN"
  *     responses:
  *       '200':
  *         description: User role updated successfully. Returns the updated user details.
