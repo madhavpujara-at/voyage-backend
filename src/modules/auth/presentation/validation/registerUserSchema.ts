@@ -6,6 +6,7 @@ import { RegisterUserRequestDto } from "../../application/useCases/registerUser/
  */
 export const RegisterUserSchema = z.object({
   email: z.string().email("Invalid email format").max(255, "Email must be less than 255 characters"),
+  name: z.string().min(1, "Name is required").max(100, "Name must be less than 100 characters"),
   password: z
     .string()
     .min(8, "Password must be at least 8 characters")

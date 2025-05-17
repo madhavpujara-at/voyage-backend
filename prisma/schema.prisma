@@ -24,6 +24,7 @@ enum UserRole {
 model User {
     id        String   @id @default(uuid())
     email     String   @unique
+    name      String
     password  String
     role      UserRole @default(TEAM_MEMBER)
     createdAt DateTime @default(now()) @map("created_at")

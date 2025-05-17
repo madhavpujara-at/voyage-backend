@@ -25,7 +25,7 @@ export class RegisterUserUseCase {
     // Check if this is the first user (to assign ADMIN role)
     const usersCount = await this.userRepository.countUsers();
     const role = usersCount === 0 ? "ADMIN" : "TEAM_MEMBER";
-    
+
     if (usersCount === 0) {
       this.logger.info("First user detected - assigning ADMIN role");
     }
@@ -33,6 +33,7 @@ export class RegisterUserUseCase {
     // Create user with appropriate role
     const newUser = await this.userRepository.create({
       email: userData.email,
+      name: userData.name,
       password: hashedPassword,
       role: role,
     });
@@ -43,8 +44,9 @@ export class RegisterUserUseCase {
     return {
       id: newUser.id,
       email: newUser.email,
+      name: newUser.name,
       role: newUser.role,
       createdAt: newUser.createdAt,
     };
   }
-} 
+}
