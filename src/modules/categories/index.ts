@@ -1,4 +1,4 @@
-import { PrismaClient } from "@/infrastructure/database/generated/prisma";
+import { PrismaClient } from "../../infrastructure/database/generated/prisma";
 import { CategoryPrismaRepository } from "./infrastructure/repositories/CategoryPrismaRepository";
 import { CreateCategoryUseCase } from "./application/useCases/createCategory/CreateCategoryUseCase";
 import { ListCategoriesUseCase } from "./application/useCases/listCategories/ListCategoriesUseCase";

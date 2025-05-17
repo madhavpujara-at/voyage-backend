@@ -1,4 +1,4 @@
-import { PrismaClient } from "@/infrastructure/database/generated/prisma";
+import { PrismaClient } from "../../infrastructure/database/generated/prisma";
 import { TeamPrismaRepository } from "./infrastructure/repositories/TeamPrismaRepository";
 import { CreateTeamUseCase } from "./application/useCases/createTeam/CreateTeamUseCase";
 import { ListTeamsUseCase } from "./application/useCases/listTeams/ListTeamsUseCase";

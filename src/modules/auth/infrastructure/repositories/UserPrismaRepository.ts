@@ -1,7 +1,7 @@
-import { IUserRepository } from "@/modules/auth/domain/interfaces/IUserRepository";
-import { User, UserRole } from "@/modules/auth/domain/entities/User";
-import prisma from "@/infrastructure/database/prisma-client";
-import pinoLoggerFactory from "@/shared/logger/pino-logger";
+import { IUserRepository } from "../../domain/interfaces/IUserRepository";
+import { User, UserRole } from "../../domain/entities/User";
+import prisma from "../../../../infrastructure/database/prisma-client";
+import pinoLoggerFactory from "../../../../shared/logger/pino-logger";
 
 export class UserPrismaRepository implements IUserRepository {
   private logger = pinoLoggerFactory.createLogger("UserPrismaRepository");
@@ -58,4 +58,4 @@ export class UserPrismaRepository implements IUserRepository {
       throw error;
     }
   }
-} 
+}

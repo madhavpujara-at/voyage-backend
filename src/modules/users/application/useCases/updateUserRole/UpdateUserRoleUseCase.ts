@@ -1,7 +1,7 @@
-import { IUserRepository } from "@/modules/auth/domain/interfaces/IUserRepository";
+import { IUserRepository } from "../../../../auth/domain/interfaces/IUserRepository";
+import pinoLoggerFactory from "../../../../../shared/logger/pino-logger";
 import { UpdateUserRoleRequestDto } from "./UpdateUserRoleRequestDto";
 import { UpdateUserRoleResponseDto } from "./UpdateUserRoleResponseDto";
-import pinoLoggerFactory from "@/shared/logger/pino-logger";
 
 export class UpdateUserRoleUseCase {
   private logger = pinoLoggerFactory.createLogger("UpdateUserRoleUseCase");

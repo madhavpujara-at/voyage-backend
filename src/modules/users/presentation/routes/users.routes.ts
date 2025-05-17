@@ -1,9 +1,10 @@
 import { Router } from "express";
+import { UserRole } from "../../../auth/domain/entities/User";
 import { UsersController } from "../controllers/users.controller";
 import { UpdateUserRoleUseCase } from "../../application/useCases/updateUserRole/UpdateUserRoleUseCase";
-import { UserPrismaRepository } from "@/modules/auth/infrastructure/repositories/UserPrismaRepository";
-import { authenticateJwt, authorizeRoles } from "@/modules/auth/presentation/middleware/jwtStrategy";
-import { validateRequest } from "@/modules/auth/presentation/middleware/validateRequest";
+import { UserPrismaRepository } from "../../../auth/infrastructure/repositories/UserPrismaRepository";
+import { authenticateJwt, authorizeRoles } from "../../../auth/presentation/middleware/jwtStrategy";
+import { validateRequest } from "../../../auth/presentation/middleware/validateRequest";
 import { UpdateUserRoleSchema } from "../validation/updateUserRoleSchema";
 
 /**
@@ -17,10 +18,10 @@ import { UpdateUserRoleSchema } from "../validation/updateUserRoleSchema";
 const router = Router();
 
 // Initialize repositories
-const userRepository = new UserPrismaRepository();
+const userPrismaRepository = new UserPrismaRepository();
 
 // Initialize use cases
-const updateUserRoleUseCase = new UpdateUserRoleUseCase(userRepository);
+const updateUserRoleUseCase = new UpdateUserRoleUseCase(userPrismaRepository);
 
 // Initialize controller
 const usersController = new UsersController(updateUserRoleUseCase);
@@ -81,12 +82,11 @@ const usersController = new UsersController(updateUserRoleUseCase);
  *               $ref: '#/components/schemas/BaseErrorResponse'
  */
 // Define routes
-router.put(
+router.patch(
   "/:userId/role",
   authenticateJwt,
-  authorizeRoles(["ADMIN"]),
+  authorizeRoles([UserRole.ADMIN]),
   (req, res, next) => {
-    // Add userId from params to the body for validation
     req.body.userId = req.params.userId;
     next();
   },

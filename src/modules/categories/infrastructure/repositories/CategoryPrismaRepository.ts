@@ -1,4 +1,4 @@
-import { PrismaClient } from "@/infrastructure/database/generated/prisma";
+import { PrismaClient } from "../../../../infrastructure/database/generated/prisma";
 import { Category } from "../../domain/entities/Category";
 import { ICategoryRepository } from "../../domain/interfaces/repositories/ICategoryRepository";
 

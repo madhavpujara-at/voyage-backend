@@ -1,12 +1,13 @@
 import { z } from "zod";
-import { UpdateUserRoleRequestDto } from "@/modules/users/application/useCases/updateUserRole/UpdateUserRoleRequestDto";
+import { UpdateUserRoleRequestDto } from "../../application/useCases/updateUserRole/UpdateUserRoleRequestDto";
+import { UserRole } from "../../../auth/domain/entities/User";
 
 /**
  * Zod schema for validating user role update requests
  */
 export const UpdateUserRoleSchema = z.object({
   userId: z.string().uuid("Invalid user ID format"),
-  newRole: z.enum(["TECH_LEAD"] as const, {
+  newRole: z.enum([UserRole.TECH_LEAD] as const, {
     errorMap: () => ({ message: "Role must be : TECH_LEAD" }),
   }),
 });

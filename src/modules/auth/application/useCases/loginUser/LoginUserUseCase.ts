@@ -1,8 +1,8 @@
-import { IUserRepository } from "@/modules/auth/domain/interfaces/IUserRepository";
+import { IUserRepository } from "../../../domain/interfaces/IUserRepository";
 import { LoginUserRequestDto } from "./LoginUserRequestDto";
 import { LoginUserResponseDto } from "./LoginUserResponseDto";
-import { comparePasswords, generateToken } from "@/modules/auth/application/utils/authUtils";
-import pinoLoggerFactory from "@/shared/logger/pino-logger";
+import { comparePasswords, generateToken } from "../../utils/authUtils";
+import pinoLoggerFactory from "../../../../../shared/logger/pino-logger";
 
 export class LoginUserUseCase {
   private logger = pinoLoggerFactory.createLogger("LoginUserUseCase");
@@ -41,4 +41,4 @@ export class LoginUserUseCase {
       token,
     };
   }
-} 
+}

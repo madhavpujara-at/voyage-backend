@@ -4,9 +4,7 @@ import { validateRequest } from "../validation/validateRequest";
 import { createCategorySchema } from "../validation/createCategorySchema";
 import { updateCategorySchema } from "../validation/updateCategorySchema";
 import { idParamSchema } from "../validation/idParamSchema";
-
-// Import authentication middleware
-import { authenticateJwt, authorizeRoles } from "@/modules/auth/presentation/middleware/jwtStrategy";
+import { authenticateJwt, authorizeRoles } from "../../../auth/presentation/middleware/jwtStrategy";
 
 export const createCategoryRouter = (categoryController: CategoryController) => {
   const router = Router();
