@@ -1,7 +1,9 @@
 import passport from "passport";
-import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
+import { Strategy as JwtStrategy, ExtractJwt, StrategyOptionsWithRequest } from "passport-jwt";
+import { Request } from "express";
 import config from "../../../../config";
 import { IUserRepository } from "../../domain/interfaces/IUserRepository";
+import { ITokenBlacklistService } from "../../domain/interfaces/ITokenBlacklistService";
 import pinoLoggerFactory from "../../../../shared/logger/pino-logger";
 
 const logger = pinoLoggerFactory.createLogger("JwtStrategy");
@@ -9,15 +11,26 @@ const logger = pinoLoggerFactory.createLogger("JwtStrategy");
 /**
  * Initialize and configure the JWT strategy for Passport
  */
-export function initializeJwtStrategy(userRepository: IUserRepository): void {
-  const options = {
+export function initializeJwtStrategy(
+  userRepository: IUserRepository,
+  tokenBlacklistService: ITokenBlacklistService,
+): void {
+  const options: StrategyOptionsWithRequest = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
     secretOrKey: config.jwtSecret,
+    passReqToCallback: true,
   };
 
   passport.use(
-    new JwtStrategy(options, async (jwtPayload, done) => {
+    new JwtStrategy(options, async (req: Request, jwtPayload: any, done: any) => {
       try {
+        // First check if token is blacklisted
+        const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+        if (token && (await tokenBlacklistService.isBlacklisted(token))) {
+          logger.warn(`Rejected blacklisted token for user: ${jwtPayload.sub}`);
+          return done(null, false, { message: "Token has been revoked" });
+        }
+
         // Find the user based on the JWT sub (subject) which is the user ID
         const user = await userRepository.findById(jwtPayload.sub);
 
@@ -34,7 +47,7 @@ export function initializeJwtStrategy(userRepository: IUserRepository): void {
         logger.error("Error authenticating user with JWT", error);
         return done(error, false);
       }
-    })
+    }),
   );
 }
 
@@ -62,4 +75,4 @@ export const authorizeRoles = (allowedRoles: string[]) => {
 
     next();
   };
-}; 
+};

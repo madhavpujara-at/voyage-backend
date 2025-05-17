@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { RegisterUserUseCase } from "../../application/useCases/registerUser/RegisterUserUseCase";
 import { LoginUserUseCase } from "../../application/useCases/loginUser/LoginUserUseCase";
+import { LogoutUserUseCase } from "../../application/useCases/logoutUser/LogoutUserUseCase";
 import pinoLoggerFactory from "../../../../shared/logger/pino-logger";
 
 const logger = pinoLoggerFactory.createLogger("AuthController");
@@ -9,6 +10,7 @@ export class AuthController {
   constructor(
     private registerUserUseCase: RegisterUserUseCase,
     private loginUserUseCase: LoginUserUseCase,
+    private logoutUserUseCase: LogoutUserUseCase,
   ) {}
 
   /**
@@ -55,6 +57,27 @@ export class AuthController {
       }
 
       logger.error("Error logging in user", error);
+      next(error);
+    }
+  };
+
+  /**
+   * Logout a user and invalidate their token
+   */
+  logout = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Get token from Authorization header
+      const token = req.headers.authorization || "";
+
+      // Execute logout use case
+      const result = await this.logoutUserUseCase.execute({ token });
+
+      return res.status(200).json({
+        status: "success",
+        message: result.message,
+      });
+    } catch (error: unknown) {
+      logger.error("Error logging out user", error);
       next(error);
     }
   };

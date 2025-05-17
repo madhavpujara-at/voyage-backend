@@ -4,6 +4,7 @@ import authRoutes from "../../modules/auth/presentation/routes/auth.routes";
 import usersRoutes from "../../modules/users/presentation/routes/users.routes";
 import pinoLoggerFactory from "../../shared/logger/pino-logger";
 import { UserPrismaRepository } from "../../modules/auth/infrastructure/repositories/UserPrismaRepository";
+import { InMemoryTokenBlacklistService } from "../../modules/auth/infrastructure/services/InMemoryTokenBlacklistService";
 import { initializeJwtStrategy } from "../../modules/auth/presentation/middleware/jwtStrategy";
 import passport from "passport";
 import { createTeamsModule } from "../../modules/teams";
@@ -19,7 +20,8 @@ router.use(passport.initialize());
 
 // Initialize repositories and strategies
 const userRepository = new UserPrismaRepository();
-initializeJwtStrategy(userRepository);
+const tokenBlacklistService = new InMemoryTokenBlacklistService();
+initializeJwtStrategy(userRepository, tokenBlacklistService);
 
 // Register all routes here
 router.use("/health", healthRoutes);
