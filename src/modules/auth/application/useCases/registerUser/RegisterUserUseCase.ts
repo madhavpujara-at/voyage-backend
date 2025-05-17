@@ -1,6 +1,6 @@
 import { IUserRepository } from "../../../domain/interfaces/IUserRepository";
 import { RegisterUserRequestDto } from "./RegisterUserRequestDto";
-import { RegisterUserResponseDto } from "./RegisterUserResponseDto";
+import { RegisterUserResponseDto, UserRole } from "./RegisterUserResponseDto";
 import { hashPassword, generateToken } from "../../utils/authUtils";
 import pinoLoggerFactory from "../../../../../shared/logger/pino-logger";
 
@@ -22,12 +22,14 @@ export class RegisterUserUseCase {
     // Hash password
     const hashedPassword = await hashPassword(userData.password);
 
-    // Check if this is the first user (to assign ADMIN role)
-    const usersCount = await this.userRepository.countUsers();
-    const role = usersCount === 0 ? "ADMIN" : "TEAM_MEMBER";
-
-    if (usersCount === 0) {
-      this.logger.info("First user detected - assigning ADMIN role");
+    // Check if this is the first user (to assign ADMIN role) only in development
+    let role: UserRole = "TEAM_MEMBER";
+    if (process.env.NODE_ENV === "development") {
+      const usersCount = await this.userRepository.countUsers();
+      if (usersCount === 0) {
+        role = "ADMIN";
+        this.logger.info("First user detected - assigning ADMIN role (development only)");
+      }
     }
 
     // Create user with appropriate role
@@ -48,7 +50,7 @@ export class RegisterUserUseCase {
       id: newUser.id,
       email: newUser.email,
       name: newUser.name,
-      role: newUser.role,
+      role: newUser.role as UserRole,
       createdAt: newUser.createdAt,
       token,
     };
