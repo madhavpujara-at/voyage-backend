@@ -21,6 +21,7 @@ This layer ensures that application logic is decoupled from UI concerns (Present
     *   `dtos/` (Optional: can be used for shared DTOs across multiple use cases if not placed within individual use case folders).
     *   `services/` (Optional): For application-specific services that are not use cases themselves but might orchestrate multiple use cases or provide broader application-level functionalities. These differ from Domain Services, which contain core business logic.
     *   `interfaces/` (Optional): For defining interfaces specific to application services (e.g., `INotificationServiceApplication`) or for DTO validation schemas if validation is handled at this layer and requires abstract definitions.
+    
 
 ## 3. Key Components & Responsibilities
 
