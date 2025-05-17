@@ -1,0 +1,147 @@
+---
+description: This rule, infrastructure_layer_sop.mdc, guides development and understanding of the Infrastructure Layer. You'll want to use it when your work involves: Connecting to External Systems: Implementing or modifying how the application talks to databases (e.g., writing repository classes like UserPostgresRepository). Integrating with third-party services or APIs (e.g., building clients for payment gateways like Stripe, or other external APIs). Interacting with the file system. Setting up message queue producers or consumers (e.g., for Kafka, RabbitMQ). Managing Technology-Specific Details: Configuring and using Object-Relational Mappers (ORMs) like TypeORM or Prisma. Working with cloud provider SDKs (e.g., AWS SDK, Azure SDK). Implementing concrete logging, monitoring, or other cross-cutting concerns that are specific to a particular environment or tool. Implementing Interfaces from Inner Layers: Providing the actual code that fulfills contracts (interfaces) defined in the Domain or Application layers (e.g., an IUserRepository interface from the Domain layer is implemented by a PostgresUserRepository in the Infrastructure layer). Ensuring Clean Architecture Principles: Understanding how to keep the core business logic (Domain and Application layers) separate and independent from specific frameworks, databases, or external services. Following best practices for error handling, configuration management, security, and testing related to external dependencies. In short, if you're touching any code that deals with the "outside world" – databases, external APIs, file systems, specific frameworks – or providing the tools for the application's core to interact with that outside world, this rule is your go-to guide.
+globs: 
+alwaysApply: false
+---
+# Standard Operating Procedure: Infrastructure Layer
+
+## 1. Introduction & Purpose
+
+The Infrastructure Layer is a critical component of the Clean Architecture model. Its primary role is to manage all external interactions and concerns, acting as the outermost layer of the application. This includes, but is not limited to, database connections, network communications with third-party services, file system operations, and interactions with various other external systems or hardware.
+
+The core purpose of this layer is to encapsulate the volatility associated with external systems and frameworks. By isolating these concerns, the core business logic (Domain and Application layers) remains independent of specific technologies or external changes, promoting maintainability, testability, and flexibility of the overall system. This layer provides concrete implementations for the interfaces (ports) defined by the inner layers.
+
+## 2. Responsibilities
+
+The Infrastructure Layer is responsible for the following:
+
+*   **Implementing Interfaces:** Providing concrete implementations for abstractions (interfaces or ports) defined by the Application and Domain layers. This is how inner layers access external functionalities without depending on concrete implementations.
+    *   Examples: `UserRepository` (implementing `IUserRepository` from Domain), `PaymentGatewayClient` (implementing `IPaymentService` from Application).
+*   **Data Persistence and Retrieval:** Managing all aspects of database interactions.
+    *   Executing CRUD (Create, Read, Update, Delete) operations.
+    *   Handling complex queries and data transformations specific to the database schema.
+    *   Managing database connections, transactions, and migrations.
+*   **External Service Integration:** Interacting with third-party APIs, microservices, or other external systems.
+    *   Making HTTP requests, handling responses.
+    *   Managing authentication (e.g., API keys, OAuth tokens) and authorization for external services.
+    *   Data serialization/deserialization (e.g., JSON, XML) for communication.
+*   **Framework and Driver Management:** Containing and configuring framework-specific code and external drivers.
+    *   Setup and configuration of ORMs (e.g., TypeORM, Prisma, Sequelize).
+    *   Configuration of web server components (if applicable and not handled by a separate Presentation layer construct).
+    *   Integration with specific cloud services SDKs (e.g., AWS SDK, Azure SDK).
+*   **Low-Level System Interactions:** Handling direct interactions with the operating system or hardware if necessary.
+    *   File system access (reading/writing files).
+    *   Network protocol handling at a lower level.
+*   **Cross-Cutting Concerns (Concrete Implementations):** Providing environment-specific implementations for shared functionalities.
+    *   Specific logging mechanisms (e.g., writing logs to a file, sending to a logging service like Datadog or Sentry).
+    *   Concrete implementations for message queue brokers (e.g., Kafka producers/consumers, RabbitMQ clients).
+
+## 3. Structure and Key Components
+
+A typical Infrastructure Layer within a module might be structured as follows:
+
+```plaintext
+[ModuleName]/
+└── infrastructure/
+    ├── repositories/                   # Concrete repository implementations
+    │   └── user.postgres.repository.ts # Implements IUserRepository using PostgreSQL
+    ├── clients/                        # Clients for external APIs/services
+    │   └── payment.stripe.client.ts    # Implements IPaymentService using Stripe
+    ├── persistence/                    # Database-specific configurations, schemas, migrations
+    │   ├── entities/                   # ORM entities or database table mappings
+    │   │   └── user.schema.ts
+    │   ├── migrations/                 # Database migration files
+    │   └── database.config.ts          # Connection configurations, ORM setup
+    ├── messaging/                      # Components for message queues/event streams
+    │   └── event.kafka.producer.ts     # Kafka producer for domain events
+    └── config/                         # Layer-specific configurations
+        └── aws.sdk.config.ts           # Configuration for AWS SDK
+```
+
+*   **`repositories/`**:
+    *   Contains concrete classes that implement the repository interfaces defined in the Domain (or sometimes Application) layer.
+    *   Example: `UserPostgresRepository.ts` implements `IUserRepository` and uses a PostgreSQL driver or ORM to interact with the database.
+    *   This is where the actual SQL queries or ORM method calls reside.
+*   **`clients/`** (or `gateways/`, `adapters/`):
+    *   Implementations for interacting with external services or APIs.
+    *   Example: `StripePaymentClient.ts` implements `IPaymentService` and makes HTTP calls to the Stripe API.
+    *   Handles request building, response parsing, error handling, and authentication specific to the external service.
+*   **`persistence/`** or **`database/`**:
+    *   Contains all database-related configurations, schema definitions (if not managed by an ORM in entities), and migration scripts.
+    *   `entities/` (if using an ORM): ORM-specific entity definitions that map to database tables. These should be distinct from Domain entities, though they might be similar. Mappers are often used to convert between Domain entities and persistence entities.
+    *   `migrations/`: Scripts for evolving the database schema over time (e.g., using tools like TypeORM migrations, Flyway, Liquibase).
+    *   `database.config.ts`: Code for establishing database connections, configuring connection pools, and setting up the ORM.
+*   **`messaging/`**:
+    *   Components responsible for producing messages to or consuming messages from message brokers (e.g., Kafka, RabbitMQ, AWS SQS).
+    *   Example: `OrderEventKafkaProducer.ts` might take a domain event and publish it to a Kafka topic.
+*   **`config/`**:
+    *   Module-specific configurations related to infrastructure concerns. This could include API keys for specific clients (though these should ideally be loaded from environment variables), SDK configurations, etc.
+
+## 4. Dependencies
+
+*   **Inward Dependencies:**
+    *   The Infrastructure Layer **depends on abstractions (interfaces)** defined in the `Domain` and `Application` layers. It *implements* these interfaces. This is the cornerstone of Dependency Inversion.
+    *   Example: `UserPostgresRepository` depends on the `IUserRepository` interface from the Domain layer.
+*   **Outward Dependencies:**
+    *   This layer is where most **external dependencies** are introduced. It directly uses and depends on:
+        *   Database drivers (e.g., `pg`, `mysql2`).
+        *   ORMs (e.g., `typeorm`, `prisma`).
+        *   HTTP clients (e.g., `axios`, `node-fetch`).
+        *   Cloud provider SDKs (e.g., `aws-sdk`).
+        *   Messaging library clients (e.g., `kafkajs`, `amqplib`).
+        *   Other third-party libraries specific to infrastructure tasks.
+*   **Prohibition:**
+    *   The `Application` and `Domain` layers **must NOT depend on any concrete class or module within the Infrastructure Layer.** They only know about the interfaces.
+
+## 5. Guiding Principles & Best Practices
+
+*   **Adherence to Interfaces:** Faithfully implement the contracts (methods, signatures, expected behavior) defined by interfaces from the inner layers.
+*   **Framework Agnosticism for Inner Layers:** Ensure that choices of frameworks or databases in this layer do not "leak" into and affect the Application or Domain layers.
+*   **Configuration Management:**
+    *   **Externalize Configurations:** Store database connection strings, API keys, URLs for external services, and other environment-specific settings in environment variables or dedicated configuration files, not hardcoded in the source code.
+    *   Use dependency injection to provide configurations to infrastructure components.
+*   **Error Handling and Resilience:**
+    *   Implement comprehensive error handling for all external interactions (e.g., database connection errors, API request timeouts, 4xx/5xx responses from external services).
+    *   Translate low-level errors into application-specific or domain-specific exceptions/errors where appropriate, often defined by the interfaces.
+    *   Consider patterns like retries (with exponential backoff), circuit breakers (e.g., using libraries like `opossum`), and dead-letter queues for messaging to build resilient systems.
+*   **Database Interactions:**
+    *   **Migration Management:** Use a systematic approach for database schema migrations. Ensure migrations are version-controlled and can be applied reliably across different environments.
+    *   **Query Optimization:** Write efficient database queries. Understand and use database indexes appropriately. Monitor for slow queries.
+    *   **Transaction Management:** Use database transactions to ensure atomicity and consistency for operations that involve multiple database writes. The Application layer often dictates the boundary of a transaction, and the Infrastructure layer implements it.
+    *   **Connection Pooling:** Configure and use database connection pools effectively to manage database connections efficiently and avoid exhausting resources.
+*   **External API Interactions:**
+    *   **Authentication/Authorization:** Securely manage and use credentials for external APIs.
+    *   **Rate Limiting:** Be aware of and respect rate limits imposed by external services. Implement strategies (e.g., throttling, queuing) to handle them.
+    *   **Data Mapping:** Map data from external API responses to internal DTOs or entities as needed. Be cautious about directly using external service DTOs in your application core.
+*   **Logging & Monitoring:**
+    *   Implement structured logging for all significant operations, especially for external calls and error conditions. Include correlation IDs to trace requests across services.
+    *   Integrate with monitoring and alerting systems to observe the health, performance, and error rates of infrastructure components and external dependencies.
+*   **Security:**
+    *   Protect against common vulnerabilities (e.g., SQL injection if not using an ORM or using raw queries, insecure handling of API keys).
+    *   Ensure data in transit is encrypted (e.g., using HTTPS for API calls, SSL/TLS for database connections).
+    *   Store sensitive information (credentials, keys) securely, preferably using a secrets management solution.
+*   **Resource Management:**
+    *   Ensure that resources like database connections, file handles, and network connections are properly released when no longer needed.
+
+## 6. Testing Strategies
+
+*   **Integration Tests:** The primary focus for testing the Infrastructure Layer.
+    *   **Repository Tests:** Test repository implementations against a real (but dedicated test) database instance or an in-memory database (e.g., SQLite for some SQL databases, or Testcontainers to spin up real database instances). Verify that data is correctly persisted and retrieved.
+    *   **External Client Tests:** Test clients for external services by:
+        *   Using mock servers (e.g., `nock` for HTTP APIs, `mock-aws-s3` for S3) that simulate the behavior of the actual external service.
+        *   Performing contract testing to ensure your client and the external service provider agree on the API contract.
+        *   Carefully controlled tests against sandboxed/developer environments of the actual external service (use sparingly and with caution, especially for services with costs or side effects).
+*   **Mocking for Inner Layer Tests:** When unit testing Application or Domain layer components, the interfaces implemented by the Infrastructure layer should be mocked or stubbed. This ensures that unit tests for business logic are fast and isolated from external dependencies.
+    *   Example: When testing a `CreateUserUseCase` in the Application layer, the `IUserRepository` would be mocked to simulate database interactions.
+*   **Test Data Management:** Develop strategies for managing test data for integration tests, ensuring tests are repeatable and independent.
+
+## 7. Common Pitfalls to Avoid
+
+*   **Leaking Infrastructure Details:** Exposing specific database types, ORM entities, or framework-specific objects to the Application or Domain layers. Inner layers should only interact through the defined interfaces.
+*   **Direct Dependencies from Inner Layers:** The Application or Domain layer directly importing or instantiating concrete classes from the Infrastructure layer. Always use Dependency Injection and rely on abstractions.
+*   **Business Logic in Infrastructure:** Placing core business rules or application logic within repository implementations or API clients. This logic belongs in the Domain or Application layers. Infrastructure components should only contain logic related to interacting with the external concern.
+*   **Ignoring External Service Failures:** Not having robust error handling, retry mechanisms, or fallback strategies for when external services are down or respond with errors. This can lead to cascading failures in the application.
+*   **Tight Coupling to a Specific Framework/Service:** Designing infrastructure components in a way that makes it very difficult to swap out one database for another, or one payment provider for another. While full agnosticism is an ideal, aim for loose coupling.
+*   **Inadequate Configuration Management:** Hardcoding connection strings, API keys, or environment-specific settings.
+*   **Insufficient Logging/Monitoring:** Making it difficult to diagnose issues related to external interactions.
+*   **Over-fetching or Under-fetching Data:** Repositories fetching more data than needed by the use case, or making multiple calls when one optimized query could suffice.
