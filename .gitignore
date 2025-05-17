@@ -4,3 +4,4 @@ node_modules
 dist
 openapi-spec.json
 generated
+API_DOCUMENTATION.md

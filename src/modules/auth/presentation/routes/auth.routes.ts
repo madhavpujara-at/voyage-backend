@@ -43,7 +43,7 @@ const authController = new AuthController(registerUserUseCase, loginUserUseCase)
  *           schema:
  *             $ref: '#/components/schemas/RegisterUserInput'
  *     responses:
- *       '201':
+ *       '200':
  *         description: User registered successfully. Returns the created user's details.
  *         content:
  *           application/json:
@@ -112,4 +112,3 @@ router.post("/register", validateRequest(RegisterUserSchema), authController.reg
 router.post("/login", validateRequest(LoginUserSchema), authController.login);
 
 export default router;
- 
