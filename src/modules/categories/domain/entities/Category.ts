@@ -6,7 +6,7 @@ export class Category {
     public readonly id: string,
     public name: string,
     public readonly createdAt: Date,
-    public readonly updatedAt: Date
+    public readonly updatedAt: Date,
   ) {}
 
   /**
@@ -16,4 +16,4 @@ export class Category {
   updateName(name: string): void {
     this.name = name;
   }
-} 
+}

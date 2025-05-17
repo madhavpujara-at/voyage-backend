@@ -159,7 +159,7 @@ const config = {
       "value": "prisma-client-js"
     },
     "output": {
-      "value": "/home/av9/personal/projects/voyage/voyage-backend/src/infrastructure/database/generated/prisma",
+      "value": "/home/av40/voyage/voyage/voyage-backend/src/infrastructure/database/generated/prisma",
       "fromEnvVar": null
     },
     "config": {
@@ -173,7 +173,7 @@ const config = {
       }
     ],
     "previewFeatures": [],
-    "sourceFilePath": "/home/av9/personal/projects/voyage/voyage-backend/prisma/schema.prisma",
+    "sourceFilePath": "/home/av40/voyage/voyage/voyage-backend/prisma/schema.prisma",
     "isCustomOutput": true
   },
   "relativeEnvPaths": {
@@ -187,7 +187,6 @@ const config = {
     "db"
   ],
   "activeProvider": "postgresql",
-  "postinstall": false,
   "inlineDatasources": {
     "db": {
       "url": {
