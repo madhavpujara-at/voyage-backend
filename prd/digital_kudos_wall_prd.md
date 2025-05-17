@@ -23,25 +23,36 @@
 
 **3. User Roles & Personas**
 
-* **3.1. Tech Lead:**
+* **3.1. Common Permissions (for all logged-in users):**
   * Can register and log in to the application.
-  * Can create kudos for colleagues.
   * Can view all kudos on the Kudos Wall.
   * Can view the Analytics Dashboard.
+
 * **3.2. Team Member:**
-  * Can register and log in to the application.
-  * Can view all kudos on the Kudos Wall.
-  * Can view the Analytics Dashboard.
+  * Possesses all Common Permissions.
   * *Cannot* create kudos.
+
+* **3.3. Tech Lead:**
+  * Possesses all Common Permissions.
+  * Can create kudos for colleagues.
+  * Can create new categories for kudos (e.g., if a new type of recognition is desired).
+
+* **3.4. Admin:**
+  * Possesses all Common Permissions.
+  * Can create kudos for colleagues.
+  * Can create and manage categories for kudos.
+  * Can create and manage team names.
+  * Can promote Team Members to Tech Leads and manage user roles.
+  * Can access user management functionalities (e.g., view lists of members/leads, modify roles).
 
 **4. Functional Requirements**
 
 * **4.1. Core Web Application**
-  * **4.1.1. Kudos Creation (Tech Lead only):**
+  * **4.1.1. Kudos Creation (Tech Lead and Admin only):**
     * Input Fields (all mandatory):
       * **Recipient's Name:** Text input for the individual's name.
-      * **Team Name:** Static dropdown. *Assumption: The list of teams will be predefined and configured within the application.*
-      * **Category:** Static dropdown (e.g., Teamwork, Innovation, Helping Hand). *Assumption: The list of categories will be predefined and configured within the application.*
+      * **Team Name:** Static dropdown. Predefined list: Infra, Data, API, UI, Analytics. *Assumption: Admins can manage this list.*
+      * **Category:** Static dropdown. Predefined list: Helping Hand, Well Done, Great Teamwork, Proud of You, Outstanding Achievement, Brilliant Idea, Amazing Support, Innovation. *Assumption: Admins can manage this list.*
       * **Short Message:** Text input explaining the reason for recognition.
   * **4.1.2. Kudos Wall (Publicly Viewable by logged-in users):**
     * Displays all submitted kudos.
@@ -49,7 +60,8 @@
       * Recipient's Name
       * Team Name
       * Category
-    * Users can search kudos. *Details of the search mechanism (e.g., which fields are searchable, type of search) will be determined during the UI design phase.*
+    * Users can search kudos based on Recipient's Name, Category, and Team Name.
+    * Users can sort kudos by "Recent" or "Oldest".
 
 * **4.2. Authentication**
   * **4.2.1. Signup:**
@@ -123,9 +135,9 @@
 
 **8. Open Questions & Assumptions Made**
 
-* **Assumption 1 (Kudos Entry - Team Name):** The list of "Team Names" for the static dropdown will be predefined and configured within the application (e.g., in a configuration file or seeded in the database). The mechanism for managing this list is outside the scope of the initial requirements.
-* **Assumption 2 (Kudos Entry - Category):** Similar to Team Name, the list of "Categories" for the static dropdown will be predefined and configured.
+* **Assumption 1 (Kudos Entry - Team Name):** The list of "Team Names" for the static dropdown will be predefined with values such as: Infra, Data, API, UI, Analytics. This list will be configurable within the application, managed by users with Admin privileges. The mechanism for managing this list (e.g., through an admin interface) is part of the Admin functionalities.
+* **Assumption 2 (Kudos Entry - Category):** Similar to Team Name, the list of "Categories" for the static dropdown will be predefined with values such as: Helping Hand, Well Done, Great Teamwork, Proud of You, Outstanding Achievement, Brilliant Idea, Amazing Support, Innovation. This list will be configurable, managed by users with Admin privileges.
 * **Assumption 3 (Authentication - Email):** For signup, any valid email address format will be accepted. No specific company domain validation (e.g., `@company.com`) is required for the hackathon version.
 * **Assumption 4 (Analytics - Trending Words):** Trending words will be identified through a basic word frequency count from kudos messages, possibly with common stop-word removal. No complex Natural Language Processing (NLP) is required.
-* **Clarification 1 (Kudos Wall - Search):** The specific fields covered by the Kudos Wall search and its exact mechanism are to be determined during the UI design phase.
+* **Clarification 1 (Kudos Wall - Search):** The Kudos Wall search will allow users to find kudos by Recipient's Name, Team Name, and Category. Sorting by recency (Recent, Oldest) will also be available.
 * **Question 2 (SOPs - Specifics):** While the `generic_clean_architecture_template.md` provides a strong foundation, further specifics for other SOPs (e.g., detailed naming conventions beyond architectural roles, specific linting rules) will be determined and documented by the development team during the project.
