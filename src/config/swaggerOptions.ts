@@ -18,6 +18,10 @@ const swaggerOptions = {
         url: "http://localhost:3000/api", // Adjusted: Removed /v1 to match server.ts
         description: "Development server",
       },
+      {
+        url: "https://voyage-backend-gd3mz.kinsta.app/api/",
+        description: "Production server",
+      },
     ],
     components: {
       securitySchemes: {
