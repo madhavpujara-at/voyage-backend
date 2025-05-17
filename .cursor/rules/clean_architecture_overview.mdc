@@ -1,0 +1,93 @@
+---
+description: This rule, clean_architecture_overview.mdc, should be used when you need a high-level understanding of the Clean Architecture principles as applied to a module within the codebase. Specifically, refer to this rule if you are: Trying to understand the overall architectural design of a module. Figuring out how different layers (Domain, Application, Presentation, Infrastructure) within a module are supposed to interact. Making decisions that could impact the structure of a module or the dependencies between its layers. Looking for a quick reminder of the purpose, typical contents, and dependency rules for each architectural layer. Onboarding to a new module and need to grasp its structural conventions quickly.
+globs: 
+alwaysApply: false
+---
+# Clean Architecture Overview for [ModuleName] Module
+
+This document provides a comprehensive overview of the Clean Architecture guidelines for any given module (referred to as `[ModuleName]`). It outlines the layers, their responsibilities, directory structures, and dependency rules to ensure a maintainable, testable, and scalable codebase.
+
+Refer to this rule when you need to understand the overall architectural design, how different parts of a module interact, or when making decisions that impact the module structure or dependencies between its layers.
+
+## Core Principle: Dependency Rule
+
+Dependencies must ALWAYS flow inwards: outer layers can depend on inner layers, but inner layers must NOT depend on outer layers. Abstractions (interfaces) are used to invert dependencies where necessary.
+
+## Layers & Responsibilities
+
+The architecture is divided into four main layers:
+
+### 1. Domain Layer
+
+*   **Directory (Typical):** `src/modules/[ModuleName]/domain/`
+*   **Purpose:** The heart of the module. Contains core business logic, rules, and entities, independent of any application or infrastructure concerns.
+*   **Key Contents:**
+    *   `entities/`: Business objects (e.g., `User`, `Product`) encapsulating data and behavior.
+    *   `interfaces/repositories/`: Abstractions for data persistence (e.g., `IUserRepository`).
+    *   `interfaces/services/`: Abstractions for domain-specific operations.
+    *   `services/`: Domain Services for logic not fitting a single entity.
+    *   **(Optional)** `valueObjects/`, `domainEvents/`.
+*   **Dependencies:** NO dependencies on other layers within this module. Can depend on shared kernel/libraries.
+
+### 2. Application Layer
+
+*   **Directory (Typical):** `src/modules/[ModuleName]/application/`
+*   **Purpose:** Orchestrates the module's use cases. Contains application-specific business logic and acts as an intermediary between the Presentation and Domain layers.
+*   **Key Contents:**
+    *   `useCases/` (or `commands/` & `queries/`): Concrete implementations of specific application functionalities (e.g., `CreateUserUseCase`).
+    *   `dtos/` (or within `useCases/`): Data Transfer Objects for use case inputs (Request DTOs) and outputs (Response DTOs).
+    *   **(Optional)** `services/` for broader application functionalities, `interfaces/` for application-specific services.
+*   **Dependencies:** Depends on the `Domain` layer (entities, domain services, repository interfaces). Does NOT depend on `Presentation` or `Infrastructure`.
+
+### 3. Presentation Layer
+
+*   **Directory (Typical):** `src/modules/[ModuleName]/presentation/`
+*   **Purpose:** Handles all interactions with the outside world (e.g., HTTP APIs, CLI, WebSockets). Responsible for presenting data and receiving input.
+*   **Key Contents:**
+    *   `controllers/` (or `handlers/`, `resolvers/`): Handles incoming requests, calls application use cases, and returns responses.
+    *   `routes/`: Defines API endpoints or command structures.
+    *   `validation/`: Input validation logic for incoming requests.
+    *   **(Optional)** `viewModels/`, `mappers/` for transforming DTOs for presentation; `ui/` or `views/`.
+*   **Dependencies:** Depends on the `Application` layer (use cases, DTOs).
+
+### 4. Infrastructure Layer
+
+*   **Directory (Typical):** `src/modules/[ModuleName]/infrastructure/` (or module-level `repositories/`, `services/` for concrete implementations).
+*   **Purpose:** Contains all external concerns and implementations of interfaces defined in inner layers. This includes databases, external API clients, file systems, message brokers, etc.
+*   **Key Contents:**
+    *   `repositories/` (or a top-level `repositories/`): Concrete implementations of repository interfaces from the Domain/Application layer (e.g., `UserPostgresRepository`).
+    *   `clients/` or `external/`: Clients for external services (e.g., payment gateways).
+    *   `persistence/` or `database/`: Database schemas, migrations, ORM configurations.
+    *   `messaging/`: Components for message queues.
+    *   `config/`: Configuration specific to infrastructure components.
+*   **Dependencies:** Implements interfaces from the `Domain` and `Application` layers. Frameworks and external libraries are heavily used here.
+
+## Typical Module Structure Overview
+
+```plaintext
+[ModuleName]/
+├── domain/                     # Core business rules & entities
+│   ├── entities/
+│   ├── interfaces/repositories/
+│   └── services/
+├── application/                # Application-specific business rules
+│   └── useCases/
+│       ├── [useCase1]/
+│       │   ├── [useCase1].ts
+│       │   ├── [useCase1]RequestDto.ts
+│       │   └── [useCase1]ResponseDto.ts
+├── presentation/               # Interface adapters (controllers, presenters)
+│   ├── controllers/
+│   ├── routes/
+│   └── validation/
+├── infrastructure/             # Frameworks, drivers, external services
+│   ├── database/
+│   ├── external/
+│   └── config/
+├── repositories/               # Concrete repository implementations (can also be under infrastructure/)
+├── services/                   # Concrete external service implementations (can also be under infrastructure/)
+├── mappers/                    # Data transformation (can be layer-specific or module-level)
+└── dtos/                       # Module-level DTOs (often application or presentation specific)
+```
+
+This structure and the principles outlined help in building robust, decoupled, and maintainable modules.
