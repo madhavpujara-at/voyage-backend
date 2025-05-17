@@ -7,4 +7,4 @@ import { User as PrismaUser, UserRole } from "../../../../infrastructure/databas
 export type User = PrismaUser;
 
 // Re-export UserRole enum
-export { UserRole }; 
+export { UserRole };

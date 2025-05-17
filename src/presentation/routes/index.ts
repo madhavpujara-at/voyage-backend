@@ -8,6 +8,7 @@ import { initializeJwtStrategy } from "../../modules/auth/presentation/middlewar
 import passport from "passport";
 import { createTeamsModule } from "../../modules/teams";
 import { createCategoriesModule } from "../../modules/categories";
+import { createKudoCardsModule } from "../../modules/kudoCards";
 import prisma from "../../infrastructure/database/prisma-client";
 
 const logger = pinoLoggerFactory.createLogger("MainRouter");
@@ -33,8 +34,11 @@ router.use("/teams", teamsModule.router);
 const categoriesModule = createCategoriesModule(prisma);
 router.use("/categories", categoriesModule.router);
 
+// Initialize and register KudoCards module
+const kudoCardsModule = createKudoCardsModule(prisma);
+router.use("/kudoCards", kudoCardsModule.router);
+
 // Other modules to be added later
-// router.use('/kudos', kudoRoutes);
 // router.use('/analytics', analyticsRoutes);
 
 logger.info("Routes registered");

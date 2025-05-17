@@ -102,8 +102,8 @@ This document outlines the plan for developing the backend of the Digital Kudos 
         *   `User`: `id`, `email`, `password`, `role` (Enum: `TeamMember`, `TechLead`, `Admin`), `createdAt`, `updatedAt`.
         *   `Team`: `id`, `name`, `createdAt`, `updatedAt`.
         *   `Category`: `id`, `name`, `createdAt`, `updatedAt`.
-        *   `Kudo`: `id`, `message`, `recipientName`, `createdAt`, `updatedAt`.
-        *   Define relations: `Kudo` to `User` (giver), `Team`, `Category`.
+        *   `KudoCards`: `id`, `message`, `recipientName`, `createdAt`, `updatedAt`.
+        *   Define relations: `KudoCards` to `User` (giver), `Team`, `Category`.
     *   Run/Verify initial migration to create tables in the database:
         ```bash
         npx prisma migrate dev --name init
@@ -233,17 +233,17 @@ This document outlines the plan for developing the backend of the Digital Kudos 
         *   `DELETE /categories/{categoryId}` (Admin): Delete category.
     *   **Infrastructure:** `CategoryPrismaRepository` implementing `ICategoryRepository`.
 
-7.  **Kudos Module (`src/modules/kudos/`)**
+7.  **KudoCards Module (`src/modules/kudoCards/`)**
     *   Follow the General Clean Architecture Module Structure.
-    *   **Domain:** `Kudo` entity, `IKudoRepository` interface. Giver is `userId` from authenticated user.
+    *   **Domain:** `KudoCards` entity, `IKudoCardsRepository` interface. Giver is `userId` from authenticated user.
     *   **Application:**
-        *   `CreateKudoUseCase` (Input: `{ recipientName: string, teamId: string, categoryId: string, message: string }`, `giverId` from `req.user`)
-        *   `ListKudosUseCase` (Handles filtering, searching, sorting based on query params)
-            *   `ListKudosRequestDto` to capture query params: `recipientName?: string`, `teamId?: string`, `categoryId?: string`, `searchTerm?: string`, `sortBy=recent|oldest`.
+        *   `CreateKudoCardsUseCase` (Input: `{ recipientName: string, teamId: string, categoryId: string, message: string }`, `giverId` from `req.user`)
+        *   `ListKudoCardsUseCase` (Handles filtering, searching, sorting based on query params)
+            *   `ListKudoCardsRequestDto` to capture query params: `recipientName?: string`, `teamId?: string`, `categoryId?: string`, `searchTerm?: string`, `sortBy=recent|oldest`.
     *   **Presentation:** Controllers and routes for:
-        *   `POST /kudos` (Tech Lead, Admin): Create kudo.
-        *   `GET /kudos`: Get all kudos with filtering, searching, and sorting.
-    *   **Infrastructure:** `KudoPrismaRepository` implementing `IKudoRepository`. Its `findAll` method needs to implement complex Prisma query with conditional `where` clauses and `orderBy`.
+        *   `POST /kudoCards` (Tech Lead, Admin): Create kudoCards.
+        *   `GET /kudoCards`: Get all kudoCards with filtering, searching, and sorting.
+    *   **Infrastructure:** `KudoCardsPrismaRepository` implementing `IKudoCardsRepository`. Its `findAll` method needs to implement complex Prisma query with conditional `where` clauses and `orderBy`.
 
 8.  **Analytics Module (`src/modules/analytics/`, `date-fns`)**
     *   Follow the General Clean Architecture Module Structure. May rely on repositories from other modules or have its own read-optimized data views/repositories.
@@ -252,13 +252,13 @@ This document outlines the plan for developing the backend of the Digital Kudos 
     *   **Application:**
         *   `GetTopRecognitionsUseCase` (Input: `period=<period>`)
             *   Returns: `{ topIndividuals: [{ name: string, count: number }], topTeams: [{ name: string, count: number }] }`.
-            *   Logic: Use Prisma `groupBy` and `count` on Kudos, filtered by date range. This will involve calling `IKudoRepository`.
+            *   Logic: Use Prisma `groupBy` and `count` on KudoCards, filtered by date range. This will involve calling `IKudoCardsRepository`.
         *   `GetTrendingWordsUseCase` (Input: `period=<period>`)
             *   Returns: `{ trendingWords: [{ word: string, count: number }] }`.
-            *   Logic: Fetch Kudo messages (via `IKudoRepository`), tokenize, remove stop-words, count frequencies.
+            *   Logic: Fetch KudoCards messages (via `IKudoCardsRepository`), tokenize, remove stop-words, count frequencies.
         *   `GetTrendingCategoriesUseCase` (Input: `period=<period>`)
             *   Returns: `{ trendingCategories: [{ name: string, count: number }] }`.
-            *   Logic: Use Prisma `groupBy` `categoryId` and `count` on Kudos (via `IKudoRepository`), filtered by date range.
+            *   Logic: Use Prisma `groupBy` `categoryId` and `count` on KudoCards (via `IKudoCardsRepository`), filtered by date range.
     *   **Presentation:** Controllers and routes for (All GET, viewable by all logged-in users):
         *   `/analytics/top-recognitions?period=<period>`
         *   `/analytics/trending-words?period=<period>`
@@ -319,7 +319,7 @@ import authRoutes from '../modules/auth/presentation/routes/auth.routes';
 import userRoutes from '../modules/users/presentation/routes/users.routes'; // If user management is separate
 import teamRoutes from '../modules/teams/presentation/routes/team.routes';
 import categoryRoutes from '../modules/categories/presentation/routes/category.routes';
-import kudoRoutes from '../modules/kudos/presentation/routes/kudo.routes';
+import kudoCardsRoutes from '../modules/kudoCards/presentation/routes/kudoCards.routes';
 import analyticsRoutes from '../modules/analytics/presentation/routes/analytics.routes';
 
 const router = Router();
@@ -328,7 +328,7 @@ router.use('/auth', authRoutes);
 router.use('/users', userRoutes); // Or merge into auth/admin specific routes
 router.use('/teams', teamRoutes);
 router.use('/categories', categoryRoutes);
-router.use('/kudos', kudoRoutes);
+router.use('/kudoCards', kudoCardsRoutes);
 router.use('/analytics', analyticsRoutes);
 
 export default router;

@@ -6,4 +6,4 @@ export interface IUserRepository {
   findById(id: string): Promise<User | null>;
   updateRole(userId: string, newRole: User["role"]): Promise<User>;
   countUsers(): Promise<number>;
-} 
+}
