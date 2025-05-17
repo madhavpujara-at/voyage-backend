@@ -100,7 +100,7 @@ To maintain a clean and effective Presentation Layer:
 
 ## 5. Typical Workflow Example (Handling an HTTP GET Request)
 
-1.  **Request Arrival**: An HTTP `GET` request arrives at a defined API endpoint (e.g., `/api/v1/products/{productId}?includeDetails=true`).
+1.  **Request Arrival**: An HTTP `GET` request arrives at a defined API endpoint (e.g., `/api/products/{productId}?includeDetails=true`).
 2.  **Routing**: The web framework's routing mechanism (configured in `routes/`) directs the request to the `getProductById` method in a `ProductController` (located in `controllers/`).
 3.  **Parameter Extraction**: The `ProductController.getProductById` method extracts path parameters (e.g., `productId`), query parameters (e.g., `includeDetails`), and headers from the incoming HTTP request.
 4.  **Input Validation**: The extracted parameters (e.g., `productId` should be a valid UUID, `includeDetails` should be a boolean) are validated using schemas or rules defined in `validation/`.
