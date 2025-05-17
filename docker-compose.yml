@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres_dev:
+    image: postgres:15 # You can specify a version
+    container_name: my_postgres_dev
+    environment:
+      POSTGRES_USER: devuser
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: devdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_dev:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata_dev: 

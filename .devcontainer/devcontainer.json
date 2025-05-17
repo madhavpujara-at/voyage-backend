@@ -1,0 +1,27 @@
+{
+    "name": "Voyage Backend Dev Container",
+    "dockerComposeFile": "docker-compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "dbaeumer.vscode-eslint",
+                "esbenp.prettier-vscode",
+                "ms-azuretools.vscode-docker",
+                "prisma.prisma",
+                "mhutchie.git-graph",
+                "WallabyJs.wallaby-vscode", // If you use Wallaby.js
+                "firsttris.vscode-jest-runner",
+                "github.vscode-github-actions",
+                "github.copilot"
+            ]
+        }
+    },
+    "forwardPorts": [
+        3000, // Application port
+        5432 // PostgreSQL port (if you want to connect from host)
+    ],
+    "postCreateCommand": "npm install && npx prisma generate && npx prisma migrate dev --name init",
+    "remoteUser": "node" // Use the default 'node' user from the mcr.microsoft.com/devcontainers/typescript-node image
+}

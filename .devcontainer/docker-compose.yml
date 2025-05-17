@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/typescript-node:0-20 # Using Node 20 LTS
+    volumes:
+      - ..:/workspace:cached
+    command: sleep infinity
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/kudosdb?schema=public
+      - PORT=${PORT:-3000}
+      - NODE_ENV=${NODE_ENV:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-debug}
+      - JWT_SECRET=${JWT_SECRET:-your-secret-key-change-this-in-production}
+    ports:
+      - "${PORT:-3000}:3000"
+    depends_on:
+      - db
+
+  db:
+    image: postgres:15
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=kudosdb
+    ports:
+      - "5432:5432" # Expose DB port to host if needed for external tools
+
+volumes:
+  postgres_data:
