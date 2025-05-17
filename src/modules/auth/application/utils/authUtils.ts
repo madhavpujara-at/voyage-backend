@@ -45,4 +45,4 @@ export function extractUserIdFromToken(token: string): string | null {
   } catch (error) {
     return null;
   }
-} 
+}

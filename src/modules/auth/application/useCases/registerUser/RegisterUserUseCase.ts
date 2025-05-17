@@ -1,7 +1,7 @@
 import { IUserRepository } from "../../../domain/interfaces/IUserRepository";
 import { RegisterUserRequestDto } from "./RegisterUserRequestDto";
 import { RegisterUserResponseDto } from "./RegisterUserResponseDto";
-import { hashPassword } from "../../utils/authUtils";
+import { hashPassword, generateToken } from "../../utils/authUtils";
 import pinoLoggerFactory from "../../../../../shared/logger/pino-logger";
 
 export class RegisterUserUseCase {
@@ -40,6 +40,9 @@ export class RegisterUserUseCase {
 
     this.logger.info(`User registered successfully: ${newUser.id} with role: ${newUser.role}`);
 
+    // Generate JWT token for the new user
+    const token = generateToken(newUser);
+
     // Return user data without sensitive information
     return {
       id: newUser.id,
@@ -47,6 +50,7 @@ export class RegisterUserUseCase {
       name: newUser.name,
       role: newUser.role,
       createdAt: newUser.createdAt,
+      token,
     };
   }
 }
