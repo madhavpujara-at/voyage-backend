@@ -1,7 +1,6 @@
 import { PrismaClient, Prisma } from "../../../../infrastructure/database/generated/prisma";
 import { KudoCard } from "../../domain/entities/KudoCards";
 import {
-  CreateKudoCardData,
   FindAllKudoCardsOptions,
   IKudoCardRepository,
 } from "../../domain/interfaces/repositories/IKudoCardsRepository";
@@ -9,56 +8,129 @@ import {
 export class KudoCardPrismaRepository implements IKudoCardRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
-  async save(kudoCardData: CreateKudoCardData): Promise<KudoCard> {
-    const result = await this.prisma.kudo.create({
-      data: {
-        message: kudoCardData.message,
-        recipientName: kudoCardData.recipientName,
-        giver: {
-          connect: { id: kudoCardData.giverId },
+  async saveEntity(kudoCard: KudoCard): Promise<KudoCard> {
+    try {
+      // For new entities, always try to create first
+      if (!kudoCard.id || kudoCard.id === '') {
+        return this.createKudoCard(kudoCard);
+      }
+      
+      // Check if the entity exists before updating
+      const existingKudo = await this.prisma.kudo.findUnique({
+        where: { id: kudoCard.id }
+      });
+      
+      // If the entity doesn't exist, create it instead of updating
+      if (!existingKudo) {
+        return this.createKudoCard(kudoCard);
+      }
+      
+      // For updating existing entities
+      const result = await this.prisma.kudo.update({
+        where: { id: kudoCard.id },
+        data: {
+          message: kudoCard.getMessage(),
+          recipientName: kudoCard.getRecipientName(),
         },
-        team: {
-          connect: { id: kudoCardData.teamId },
-        },
-        category: {
-          connect: { id: kudoCardData.categoryId },
-        },
-      },
-      include: {
-        giver: {
-          select: {
-            id: true,
-            email: true,
+        include: {
+          giver: {
+            select: {
+              id: true,
+              email: true,
+            },
+          },
+          team: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          category: {
+            select: {
+              id: true,
+              name: true,
+            },
           },
         },
-        team: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-        category: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
-    });
+      });
 
-    return new KudoCard(
-      result.id,
-      result.message,
-      result.recipientName,
-      result.giverId,
-      result.teamId,
-      result.categoryId,
-      result.createdAt,
-      result.updatedAt,
-      result.team.name,
-      result.category.name,
-      result.giver.email,
-    );
+      return new KudoCard(
+        result.id,
+        result.message,
+        result.recipientName,
+        result.giverId,
+        result.teamId,
+        result.categoryId,
+        result.createdAt,
+        result.updatedAt,
+        result.team.name,
+        result.category.name,
+        result.giver.email,
+      );
+    } catch (error) {
+      console.error("Error in saveEntity:", error);
+      throw error;
+    }
+  }
+
+  // Helper method to create a new kudo card
+  private async createKudoCard(kudoCard: KudoCard): Promise<KudoCard> {
+    try {
+      const result = await this.prisma.kudo.create({
+        data: {
+          // Use the client-provided ID if it exists
+          ...(kudoCard.id && kudoCard.id !== '' ? { id: kudoCard.id } : {}),
+          message: kudoCard.getMessage(),
+          recipientName: kudoCard.getRecipientName(),
+          giver: {
+            connect: { id: kudoCard.getGiverId() },
+          },
+          team: {
+            connect: { id: kudoCard.getTeamId() },
+          },
+          category: {
+            connect: { id: kudoCard.getCategoryId() },
+          },
+        },
+        include: {
+          giver: {
+            select: {
+              id: true,
+              email: true,
+            },
+          },
+          team: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          category: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
+
+      return new KudoCard(
+        result.id,
+        result.message,
+        result.recipientName,
+        result.giverId,
+        result.teamId,
+        result.categoryId,
+        result.createdAt,
+        result.updatedAt,
+        result.team.name,
+        result.category.name,
+        result.giver.email,
+      );
+    } catch (error) {
+      console.error("Error creating kudo card:", error);
+      throw error;
+    }
   }
 
   async findById(id: string): Promise<KudoCard | null> {
@@ -107,7 +179,7 @@ export class KudoCardPrismaRepository implements IKudoCardRepository {
 
   async findAll(options?: FindAllKudoCardsOptions): Promise<KudoCard[]> {
     // Build the where clause based on provided options
-    const where: any = {};
+    const where: Prisma.KudoWhereInput = {};
 
     if (options?.recipientName) {
       where.recipientName = {

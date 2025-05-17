@@ -17,7 +17,7 @@ export interface CreateKudoCardData {
 }
 
 export interface IKudoCardRepository {
-  save(kudoCardData: CreateKudoCardData): Promise<KudoCard>;
+  saveEntity(kudoCard: KudoCard): Promise<KudoCard>;
   findAll(options?: FindAllKudoCardsOptions): Promise<KudoCard[]>;
   findById(id: string): Promise<KudoCard | null>;
 }

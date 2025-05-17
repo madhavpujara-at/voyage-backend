@@ -35,6 +35,17 @@ export class KudoCard {
     }
   }
 
+  // Update methods
+  public updateMessage(newMessage: string): void {
+    this.validateMessage(newMessage);
+    this.message = newMessage;
+  }
+
+  public updateRecipientName(newRecipientName: string): void {
+    this.validateRecipientName(newRecipientName);
+    this.recipientName = newRecipientName;
+  }
+
   // Getters
   public getId(): string {
     return this.id;
