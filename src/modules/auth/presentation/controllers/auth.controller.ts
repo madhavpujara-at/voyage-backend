@@ -17,7 +17,7 @@ export class AuthController {
   register = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const result = await this.registerUserUseCase.execute(req.body);
-      return res.status(201).json({
+      return res.status(200).json({
         status: "success",
         data: result,
       });

@@ -28,7 +28,7 @@ export class KudoCardController {
       const result = await this.createKudoCardsUseCase.execute(req.body as CreateKudoCardsRequestDto, giverId);
 
       // Return success response
-      res.status(201).json(result);
+      res.status(200).json(result);
     } catch (error: unknown) {
       // Handle errors
       console.error("Error creating kudo card:", error);
