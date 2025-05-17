@@ -1,4 +1,4 @@
-export type UserRole = "ADMIN" | "TEAM_MEMBER";
+import { UserRole } from "../../../domain/entities/User";
 
 export interface RegisterUserResponseDto {
   id: string;

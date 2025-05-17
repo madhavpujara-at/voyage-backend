@@ -1,6 +1,7 @@
 import { IUserRepository } from "../../../domain/interfaces/IUserRepository";
+import { User, UserRole } from "../../../domain/entities/User";
 import { RegisterUserRequestDto } from "./RegisterUserRequestDto";
-import { RegisterUserResponseDto, UserRole } from "./RegisterUserResponseDto";
+import { RegisterUserResponseDto } from "./RegisterUserResponseDto";
 import { hashPassword, generateToken } from "../../utils/authUtils";
 import pinoLoggerFactory from "../../../../../shared/logger/pino-logger";
 
@@ -23,11 +24,11 @@ export class RegisterUserUseCase {
     const hashedPassword = await hashPassword(userData.password);
 
     // Check if this is the first user (to assign ADMIN role) only in development
-    let role: UserRole = "TEAM_MEMBER";
+    let role: UserRole = UserRole.TEAM_MEMBER;
     if (process.env.NODE_ENV === "development") {
       const usersCount = await this.userRepository.countUsers();
       if (usersCount === 0) {
-        role = "ADMIN";
+        role = UserRole.ADMIN;
         this.logger.info("First user detected - assigning ADMIN role (development only)");
       }
     }
@@ -50,7 +51,7 @@ export class RegisterUserUseCase {
       id: newUser.id,
       email: newUser.email,
       name: newUser.name,
-      role: newUser.role as UserRole,
+      role: newUser.role,
       createdAt: newUser.createdAt,
       token,
     };
