@@ -136,20 +136,23 @@ This document outlines the plan for developing the backend of the Digital Kudos 
         *   `application/`:
             *   `useCases/registerUser/`:
                 *   `RegisterUserUseCase.ts` (Handles registration logic: hash password, save user with default role)
-                *   `RegisterUserRequestDto.ts` (Zod schema for registration input)
+                *   `RegisterUserRequestDto.ts` (Plain interface defining input data structure)
                 *   `RegisterUserResponseDto.ts` (Defines registration output, e.g., user info without password)
             *   `useCases/loginUser/`:
                 *   `LoginUserUseCase.ts` (Handles login logic: find user, compare password, generate JWT)
-                *   `LoginUserRequestDto.ts` (Zod schema for login input)
+                *   `LoginUserRequestDto.ts` (Plain interface defining input data structure)
                 *   `LoginUserResponseDto.ts` (Defines login output, e.g., user info and JWT)
             *   `dtos/` (Shared DTOs for the auth module if any, or keep them specific to use cases)
         *   `presentation/`:
             *   `controllers/auth.controller.ts` (Route handlers for `/register` and `/login`, calls use cases)
             *   `routes/auth.routes.ts` (Defines `POST /auth/register` and `POST /auth/login` routes)
-            *   `validation/` (Contains Zod schemas imported by DTOs or used directly by validation middleware)
+            *   `validation/` (Contains Zod schemas that validate against the application DTOs)
+                *   `registerUserSchema.ts` (Zod schema for registration input validation)
+                *   `loginUserSchema.ts` (Zod schema for login input validation)
+            *   `middleware/validateRequest.ts` (Middleware to validate requests against schemas)
         *   `infrastructure/`:
             *   `repositories/UserPrismaRepository.ts` (Implements `IUserRepository` using Prisma Client)
-    *   **Passport JWT Strategy (`src/middleware/auth.middleware.ts` or `src/config/passport.ts`):**
+    *   **Passport JWT Strategy (`src/modules/auth/presentation/middleware/jwtStrategy.ts`):**
         *   Configure `passport-jwt` strategy to extract JWT from `Authorization: Bearer <token>` header.
         *   Create `authenticateJwt` middleware using `passport.authenticate('jwt', { session: false })`.
     *   **User Roles & Management (Admin):**
@@ -159,15 +162,16 @@ This document outlines the plan for developing the backend of the Digital Kudos 
             *   `application/`:
                 *   `useCases/updateUserRole/`:
                     *   `UpdateUserRoleUseCase.ts` (Handles logic to update a user's role)
-                    *   `UpdateUserRoleRequestDto.ts` (Input: `userId`, `newRole`)
-                    *   `UpdateUserRoleResponseDto.ts` (Output: updated user info)
+                    *   `UpdateUserRoleRequestDto.ts` (Plain interface defining input data structure: `userId`, `newRole`)
+                    *   `UpdateUserRoleResponseDto.ts` (Defines output: updated user info)
             *   `presentation/`:
                 *   `controllers/users.controller.ts` (Route handler for `PUT /users/{userId}/role`)
                 *   `routes/users.routes.ts` (Defines the route, protected by `authenticateJwt` and `authorizeRole(['Admin'])`)
                 *   `validation/` (Zod schemas for request parameters/body)
+                    *   `updateUserRoleSchema.ts` (Zod schema for validating role update requests)
             *   `infrastructure/`:
                 *   (Likely uses the same `UserPrismaRepository.ts` from `auth` module)
-        *   Create `authorizeRole(['Admin'])` middleware. This middleware should:
+        *   Create `authorizeRoles(['Admin'])` middleware. This middleware should:
             1.  Come *after* `authenticateJwt`.
             2.  Check `req.user.role` against the allowed roles.
             3.  Return 403 Forbidden if not authorized.
@@ -184,14 +188,16 @@ This document outlines the plan for developing the backend of the Digital Kudos 
 *   **`src/modules/[ModuleName]/application/`**
     *   `useCases/[useCaseName]/`: Each use case gets its own folder.
         *   `[UseCaseName]UseCase.ts`: Implements a specific application task (e.g., `CreateKudoUseCase.ts`).
-        *   `[UseCaseName]RequestDto.ts`: Defines the input data structure for the use case, often using Zod for validation.
+        *   `[UseCaseName]RequestDto.ts`: Defines the input data structure as a plain interface.
         *   `[UseCaseName]ResponseDto.ts`: Defines the output data structure.
     *   `(optional) services/`: Application services for broader tasks or orchestration.
     *   `dtos/`: Shared DTOs for the module, or DTOs can live within their respective use case folders.
 *   **`src/modules/[ModuleName]/presentation/`**
     *   `controllers/`: Express route handlers (e.g., `kudos.controller.ts`). They call application use cases.
     *   `routes/`: Express router definitions (e.g., `kudos.routes.ts`). Applies middleware like `authenticateJwt`, `authorizeRole`, and validation.
-    *   `validation/`: Zod schemas for request validation (body, params, query), used by DTOs or validation middleware.
+    *   `validation/`: Zod schemas that validate against application DTOs.
+        *   Each validation schema should be in its own file (e.g., `createKudoSchema.ts`)
+        *   Schemas should import the corresponding application DTOs for type checking
     *   `(optional) mappers/`: For transforming data between presentation DTOs and application DTOs if needed.
 *   **`src/modules/[ModuleName]/infrastructure/`**
     *   `repositories/`: Concrete repository implementations using Prisma (e.g., `KudoPrismaRepository.ts` implementing `IKudoRepository.ts`).

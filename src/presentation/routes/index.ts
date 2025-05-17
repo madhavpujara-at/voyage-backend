@@ -6,6 +6,8 @@ import pinoLoggerFactory from "@/shared/logger/pino-logger";
 import { UserPrismaRepository } from "@/modules/auth/infrastructure/repositories/UserPrismaRepository";
 import { initializeJwtStrategy } from "@/modules/auth/presentation/middleware/jwtStrategy";
 import passport from "passport";
+import { createTeamsModule } from "@/modules/teams";
+import prisma from "@/infrastructure/database/prisma-client";
 
 const logger = pinoLoggerFactory.createLogger("MainRouter");
 const router = Router();
@@ -13,7 +15,7 @@ const router = Router();
 // Initialize passport
 router.use(passport.initialize());
 
-// Initialize JWT strategy
+// Initialize repositories and strategies
 const userRepository = new UserPrismaRepository();
 initializeJwtStrategy(userRepository);
 
@@ -22,9 +24,12 @@ router.use("/health", healthRoutes);
 router.use("/auth", authRoutes);
 router.use("/users", usersRoutes);
 
+// Initialize and register Teams module
+const teamsModule = createTeamsModule(prisma);
+router.use("/teams", teamsModule.router);
+
 // As we develop more modules, we'll add their routes here
 // Example:
-// router.use('/teams', teamRoutes);
 // router.use('/categories', categoryRoutes);
 // router.use('/kudos', kudoRoutes);
 // router.use('/analytics', analyticsRoutes);

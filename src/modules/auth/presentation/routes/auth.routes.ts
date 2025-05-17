@@ -25,3 +25,4 @@ router.post("/register", validateRequest(RegisterUserSchema), authController.reg
 router.post("/login", validateRequest(LoginUserSchema), authController.login);
 
 export default router;
+ 

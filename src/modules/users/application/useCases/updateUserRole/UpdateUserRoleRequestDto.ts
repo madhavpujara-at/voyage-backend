@@ -7,3 +7,4 @@ export interface UpdateUserRoleRequestDto {
   userId: string;
   newRole: UserRole;
 }
+ 
