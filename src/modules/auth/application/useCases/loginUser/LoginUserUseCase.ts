@@ -1,4 +1,5 @@
 import { IUserRepository } from "../../../domain/interfaces/IUserRepository";
+import { User } from "../../../domain/entities/User";
 import { LoginUserRequestDto } from "./LoginUserRequestDto";
 import { LoginUserResponseDto } from "./LoginUserResponseDto";
 import { comparePasswords, generateToken } from "../../utils/authUtils";
@@ -36,6 +37,7 @@ export class LoginUserUseCase {
       user: {
         id: user.id,
         email: user.email,
+        name: user.name,
         role: user.role,
       },
       token,

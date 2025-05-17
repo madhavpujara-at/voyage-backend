@@ -1,32 +1,38 @@
 import { Router } from "express";
-import { AuthController } from "../controllers/auth.controller";
 import { validateRequest } from "../middleware/validateRequest";
 import { RegisterUserSchema } from "../validation/registerUserSchema";
 import { LoginUserSchema } from "../validation/loginUserSchema";
 import { LogoutUserSchema } from "../validation/logoutUserSchema";
+import { authenticateJwt } from "../middleware/jwtStrategy";
+import { AuthController } from "../controllers/auth.controller";
+import { UserPrismaRepository } from "../../infrastructure/repositories/UserPrismaRepository";
+import { UserPrismaMapper } from "../../infrastructure/mappers/UserMapper";
 import { RegisterUserUseCase } from "../../application/useCases/registerUser/RegisterUserUseCase";
 import { LoginUserUseCase } from "../../application/useCases/loginUser/LoginUserUseCase";
 import { LogoutUserUseCase } from "../../application/useCases/logoutUser/LogoutUserUseCase";
-import { UserPrismaRepository } from "../../infrastructure/repositories/UserPrismaRepository";
 import { InMemoryTokenBlacklistService } from "../../infrastructure/services/InMemoryTokenBlacklistService";
-import { authenticateJwt } from "../middleware/jwtStrategy";
 
 // Component schemas and security schemes are now defined in src/presentation/schemas/openapi.schemas.ts
 
 // Initialize router
 const router = Router();
 
-// Initialize repositories and services
-const userRepository = new UserPrismaRepository();
+// Create dependencies directly
+const userMapper = new UserPrismaMapper();
+const userRepository = new UserPrismaRepository(userMapper);
 const tokenBlacklistService = new InMemoryTokenBlacklistService();
 
-// Initialize use cases
+// Create use cases
 const registerUserUseCase = new RegisterUserUseCase(userRepository);
 const loginUserUseCase = new LoginUserUseCase(userRepository);
 const logoutUserUseCase = new LogoutUserUseCase(tokenBlacklistService);
 
-// Initialize controller with use cases
-const authController = new AuthController(registerUserUseCase, loginUserUseCase, logoutUserUseCase);
+// Create controller
+const authController = new AuthController(
+  registerUserUseCase,
+  loginUserUseCase,
+  logoutUserUseCase
+);
 
 // Initialize JWT strategy
 import { initializeJwtStrategy } from "../middleware/jwtStrategy";
