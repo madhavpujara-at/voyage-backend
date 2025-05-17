@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres_dev:
     image: postgres:15 # You can specify a version
@@ -15,4 +13,4 @@ services:
     restart: unless-stopped
 
 volumes:
-  pgdata_dev: 
+  pgdata_dev:

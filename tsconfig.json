@@ -23,7 +23,7 @@
         }
     },
     "include": [
-        "src/**/*.ts"
+        "src/**/*.ts",
     ], /* Specifies a list of files to be included in compilation. */
     "exclude": [
         "node_modules",

@@ -1,20 +1,30 @@
-import express from "express";
+import express, { Application } from "express";
 import cors from "cors";
 import pinoLoggerFactory from "./shared/logger/pino-logger";
 import config from "./config";
 import router from "./presentation/routes";
 import { errorHandler } from "./presentation/middleware/error-handler";
 import { disconnectPrisma } from "./infrastructure/database/prisma-client";
+import swaggerUi from "swagger-ui-express";
+import swaggerJsdoc from "swagger-jsdoc";
+import swaggerOptions from "./config/swaggerOptions";
 
 // Create logger instance
 const logger = pinoLoggerFactory.createLogger("Server");
 
 // Initialize Express app
-const app = express();
+const app: Application = express();
 
 // Apply middleware
 app.use(cors());
 app.use(express.json());
+
+// Swagger setup
+if (config.nodeEnv !== "production") {
+  const specs = swaggerJsdoc(swaggerOptions);
+  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs, { explorer: true }));
+  logger.info(`API docs available at /api-docs`);
+}
 
 // API routes
 app.use("/api", router);
