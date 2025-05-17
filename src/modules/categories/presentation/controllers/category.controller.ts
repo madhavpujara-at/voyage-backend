@@ -26,7 +26,7 @@ export class CategoryController {
     try {
       const requestDto: CreateCategoryRequestDto = req.body;
       const responseDto = await this.createCategoryUseCase.execute(requestDto);
-      res.status(201).json(responseDto);
+      res.status(200).json(responseDto);
     } catch (error) {
       if (error instanceof Error && error.message.includes("already exists")) {
         // Return success with a message that the category already exists
