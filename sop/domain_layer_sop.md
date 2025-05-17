@@ -1,0 +1,215 @@
+# SOP: Domain Layer - [ModuleName]
+
+**1. Introduction and Purpose**
+*   **1.1. Definition:** The Domain Layer is the heart of the application, encapsulating the core business logic, rules, and entities. It represents the problem domain the software is trying to solve.
+*   **1.2. Core Principles:**
+    *   Encapsulates core business rules and entities.
+    *   Independent of application-specific logic (use cases).
+    *   Independent of infrastructure concerns (frameworks, databases, UI).
+    *   Contains high-level policies and is the most stable part of the application.
+*   **1.3. Goal of this SOP:** To ensure consistency, maintainability, and adherence to Clean Architecture principles when developing the Domain Layer for any module within the project.
+
+**2. Domain Layer Structure & Components**
+*   **2.1. Standard Directory:** `domain/` (relative to the module's root, e.g., `src/modules/[ModuleName]/domain/`)
+*   **2.2. Core Sub-directories and Their Purpose:**
+    *   **2.2.1. `entities/`**
+        *   **Contents:** Business objects representing core concepts (e.g., `User.ts`, `Product.ts`, `Order.ts`).
+        *   **Guidelines:**
+            *   Should encapsulate data (properties) and behavior (methods) specific to the entity.
+            *   Must be plain objects/classes, free from framework decorators or specific library dependencies (e.g., no ORM decorators like `@Entity()` from TypeORM).
+            *   Focus on validating business rules and maintaining invariants within entity methods (e.g., `product.updatePrice(newPrice)` should contain logic to ensure `newPrice` is valid according to business rules).
+            *   Define clear invariants (conditions that must always be true for an entity to be valid).
+            *   Entities usually have an identity that is maintained throughout their lifecycle.
+    *   **2.2.2. `interfaces/`**
+        *   **Contents:** Abstractions (TypeScript interfaces) for domain-specific operations. These define contracts that outer layers (primarily Infrastructure) will implement.
+        *   **Sub-directories:**
+            *   `repositories/`: Defines contracts for data persistence operations (e.g., `IUserRepository.ts`, `IProductRepository.ts`).
+                *   **Guidelines:** Specify methods for CRUD operations and any other business-specific data retrieval methods (e.g., `findActiveUsers()`, `getProductBySku(sku)`). Return types should be domain entities, collections of domain entities, or primitive types.
+            *   `services/` (Domain Service Interfaces - if complex domain logic needs abstraction): Defines contracts for domain services if their implementations might vary or need to be mocked for testing other domain components.
+        *   **Guidelines:**
+            *   Interfaces are key to Dependency Inversion Principle (DIP), allowing the domain to define its needs without knowing the concrete implementation details (which reside in the infrastructure layer).
+    *   **2.2.3. `services/` (Domain Services)**
+        *   **Contents:** Implementations of domain logic that doesn't naturally fit within a single entity or involves coordinating multiple entities. These are stateless services.
+        *   **Guidelines:**
+            *   Use when an operation involves significant domain logic that spans across multiple domain entities or performs calculations based on domain rules that don't belong to a single entity.
+            *   Should operate solely on domain entities and value objects.
+            *   Example: A `OrderPricingService` that calculates the total price of an order based on products, discounts (which might be value objects or entities themselves), and customer status.
+    *   **2.2.4. (Optional) `valueObjects/`**
+        *   **Contents:** Objects representing descriptive aspects of the domain with no conceptual identity, where equality is based on their attribute values (e.g., `Address.ts`, `Money.ts`, `EmailAddress.ts`).
+        *   **Guidelines:**
+            *   Immutable by design (once created, their state cannot change).
+            *   Often used to encapsulate validation logic for specific attributes (e.g., an `EmailAddress` value object's constructor validates the email format).
+            *   Can be composed within entities.
+    *   **2.2.5. (Optional) `domainEvents/`**
+        *   **Contents:** Classes representing significant occurrences or facts within the domain that other parts of the system (potentially in other layers or even other bounded contexts) might need to react to (e.g., `OrderPlacedEvent.ts`, `UserRegisteredEvent.ts`).
+        *   **Guidelines:**
+            *   Should be immutable and contain data relevant to the event (e.g., `orderId`, `timestamp`).
+            *   Typically dispatched by entities or domain services after a state change that constitutes an event.
+            *   Naming convention: Past tense (e.g., `ItemAddedToCartEvent`).
+
+**3. Key Responsibilities & Rules for the Domain Layer**
+*   **3.1. Dependency Rule:** The Domain Layer **MUST NOT** depend on any other layer within the module (Application, Presentation, Infrastructure). It can depend on shared kernel/utility libraries if they are truly generic and framework-agnostic. No `import` statements should reference files outside the `domain/` directory or approved shared libraries.
+*   **3.2. Business Logic Encapsulation:** All core business rules, policies, and logic intrinsic to the domain must reside within this layer, primarily in entities and domain services.
+*   **3.3. Framework Independence:** Code in the Domain Layer should be plain TypeScript/JavaScript. Avoid direct use of external frameworks, libraries (e.g., Express, NestJS, TypeORM specific decorators/classes) or platform-specific APIs.
+*   **3.4. Testability:** Domain logic should be highly testable in isolation, without needing to mock extensive external dependencies. Unit tests for domain components should be fast and reliable.
+
+**4. Coding Guidelines and Best Practices**
+*   **4.1. Defining Entities:**
+    *   Use classes with private fields where appropriate and public methods to expose behavior and enforce invariants.
+    *   Constructors (or static factory methods) should ensure entities are created in a valid state.
+    *   Methods should enforce business rules and invariants. State changes should occur through methods.
+    *   Example:
+        ```typescript
+        // domain/entities/product.ts
+        export class Product {
+          constructor(
+            public readonly id: string, // UUID or similar
+            private name: string,
+            private price: number,
+            private isActive: boolean = true,
+            private stockQuantity: number
+          ) {
+            if (!name) throw new DomainError("Product name cannot be empty.");
+            if (price <= 0) throw new DomainError("Product price must be positive.");
+            if (stockQuantity < 0) throw new DomainError("Stock quantity cannot be negative.");
+          }
+
+          public updateDetails(name: string, price: number): void {
+            if (!name) throw new DomainError("Product name cannot be empty.");
+            this.name = name;
+            this.setPrice(price);
+          }
+
+          public setPrice(newPrice: number): void {
+            if (newPrice <= 0) {
+              throw new DomainError("Price must be a positive value.");
+            }
+            // Example business rule: price cannot be increased by more than 20% at once without approval (simplified here)
+            if (newPrice > this.price * 1.20) {
+                // In a real scenario, this might involve more complex logic or events
+                console.warn(`Price for product ${this.id} increased significantly.`);
+            }
+            this.price = newPrice;
+          }
+
+          public deactivate(): void {
+            if (!this.isActive) return; // Idempotent
+            this.isActive = false;
+            // Potentially dispatch a DomainEvent: new ProductDeactivatedEvent(this.id)
+          }
+
+          public reduceStock(quantity: number): void {
+            if (quantity <= 0) throw new DomainError("Quantity to reduce must be positive.");
+            if (this.stockQuantity < quantity) {
+                throw new InsufficientStockError(`Not enough stock for product ${this.name}.`);
+            }
+            this.stockQuantity -= quantity;
+          }
+
+          // Getters for properties if needed, but prefer behavior-rich methods
+          public getName(): string { return this.name; }
+          public getPrice(): number { return this.price; }
+          public getIsActive(): boolean { return this.isActive; }
+          public getStockQuantity(): number { return this.stockQuantity; }
+        }
+        ```
+*   **4.2. Defining Repository Interfaces:**
+    *   Focus on the needs of the domain, not the capabilities of a specific database technology.
+    *   Methods should return domain entities, collections of domain entities, or primitive types where appropriate.
+    *   Example:
+        ```typescript
+        // domain/interfaces/repositories/IProductRepository.ts
+        import { Product } from '../../entities/product';
+
+        export interface IProductRepository {
+          findById(id: string): Promise<Product | null>;
+          findByName(name: string): Promise<Product | null>;
+          save(product: Product): Promise<void>; // Handles both create and update
+          delete(productId: string): Promise<void>;
+          findAllActive(): Promise<Product[]>;
+          findAll(): Promise<Product[]>;
+        }
+        ```
+*   **4.3. Implementing Domain Services:**
+    *   Inject necessary repository interfaces or other domain services via the constructor (Dependency Injection).
+    *   Methods should orchestrate logic using domain entities and value objects.
+    *   Domain services are typically stateless.
+    *   Example:
+        ```typescript
+        // domain/services/shipmentEligibilityService.ts
+        import { Product } from '../entities/product';
+        import { Address } from '../valueObjects/address'; // Assuming Address is a Value Object
+
+        export class ShipmentEligibilityService {
+          // No dependencies needed for this simple example, but could inject IRegionLockdownRepository
+          constructor() {}
+
+          public isProductShippableToAddress(product: Product, address: Address): boolean {
+            if (!product.getIsActive()) {
+              return false;
+            }
+            // Example rule: Certain products cannot be shipped to certain regions
+            if (product.getName().includes("HazardousMaterial") && address.getCountry() === "Wonderland") {
+              return false;
+            }
+            // More complex rules could go here...
+            return true;
+          }
+        }
+        ```
+*   **4.4. Naming Conventions:**
+    *   Entities: PascalCase (e.g., `UserProfile`)
+    *   Value Objects: PascalCase (e.g., `MonetaryAmount`)
+    *   Repository Interfaces: Prefix with `I` followed by PascalCase (e.g., `IOrderRepository`)
+    *   Domain Services: PascalCase, often ending with `Service` (e.g., `PricingService`)
+    *   Domain Events: PascalCase, ending with `Event` (e.g., `OrderShippedEvent`)
+    *   Methods: camelCase (e.g., `calculateTotal`)
+*   **4.5. Error Handling:**
+    *   Use custom domain-specific error classes that extend `Error`. This provides clear context for business rule violations and allows for more precise error handling by callers.
+    *   Examples: `InsufficientStockError`, `InvalidPriceError`, `ProductArchivedError`, `DomainError` (as a base).
+        ```typescript
+        // domain/errors/domainError.ts
+        export class DomainError extends Error {
+          constructor(message: string) {
+            super(message);
+            this.name = this.constructor.name;
+          }
+        }
+
+        // domain/errors/insufficientStockError.ts
+        import { DomainError } from './domainError';
+        export class InsufficientStockError extends DomainError {
+          constructor(message: string) {
+            super(message);
+          }
+        }
+        ```
+
+**5. Common Pitfalls and How to Avoid Them**
+*   **5.1. Anemic Domain Model:** Entities that are mere data bags with only getters and setters, and all business logic residing in services (often Application Services rather than Domain Services).
+    *   **Avoidance:** Ensure entities encapsulate their own behavior, state transitions, and validation rules. Ask "What can this entity *do*?" not just "What data does it *hold*?"
+*   **5.2. Leaking Infrastructure Concerns:** Referencing database models, ORM specifics (decorators, base classes), or HTTP concepts within the domain layer. Using types from external libraries that are not purely about domain modeling.
+    *   **Avoidance:** Strictly adhere to using only plain TypeScript/JavaScript objects/classes and interfaces defined within the domain. Use repository interfaces for data access, with implementations in the Infrastructure layer.
+*   **5.3. Putting Application Logic in Domain Services:** Domain services should only contain logic that is core to the business domain itself, reusable across different use cases, and independent of application flow. Application-specific workflow orchestration (e.g., "fetch data, then call domain service, then send notification") belongs in Application Layer Use Cases.
+    *   **Avoidance:** Clearly distinguish between pure domain logic (stable, universal business rules) and application logic (use case specific orchestration).
+*   **5.4. Over-complicating with Unnecessary Abstractions:** Don't create interfaces for every class or introduce patterns like Domain Services if a simple entity method or value object suffices.
+    *   **Avoidance:** Start simple. Introduce abstractions and patterns like Domain Services or Value Objects only when the complexity warrants them or to improve testability and cohesion.
+*   **5.5. Returning Data Structures Instead of Entities from Repositories:** Repository interface methods should return Domain Entities (or collections thereof), not raw database rows or generic objects.
+    *   **Avoidance:** Ensure repository implementations (in the Infrastructure layer) map data from the persistence mechanism to domain entities before returning them.
+
+**6. Relationship with Other Layers**
+*   **6.1. Application Layer:**
+    *   The Application Layer is the primary client of the Domain Layer.
+    *   Use cases in the Application Layer orchestrate domain entities and domain services to fulfill application-specific tasks.
+    *   It retrieves entities via repository interfaces, tells them to perform actions, and then uses repository interfaces to persist changes.
+*   **6.2. Infrastructure Layer:**
+    *   Implements the repository interfaces defined in the Domain Layer (e.g., `ProductPostgresRepository implements IProductRepository`).
+    *   May also implement interfaces for other infrastructure-facing domain needs (e.g., an `IDomainEventPublisher` interface defined in domain, implemented by infrastructure).
+*   **6.3. Presentation Layer:**
+    *   Should **not** interact directly with the Domain Layer. All interactions must go through the Application Layer (use cases).
+
+**7. Review and Updates to this SOP**
+*   This SOP should be reviewed periodically (e.g., quarterly or after major project milestones) and updated as the project evolves, new patterns emerge, or best practices change. Feedback from the development team is crucial for its refinement.
+
+---
+*Placeholder for module-specific overrides or additions, if any.* 
