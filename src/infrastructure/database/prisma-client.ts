@@ -1,6 +1,6 @@
-import { PrismaClient } from "../../database/generated/prisma";
-import config from "../../config";
-import pinoLoggerFactory from "../../shared/logger/pino-logger";
+import config from "@/config";
+import pinoLoggerFactory from "@/shared/logger/pino-logger";
+import { PrismaClient } from "./generated/prisma";
 
 const logger = pinoLoggerFactory.createLogger("PrismaClient");
 

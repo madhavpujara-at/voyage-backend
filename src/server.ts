@@ -60,6 +60,9 @@ const shutdownGracefully = async (signal: string) => {
   }, 10000);
 };
 
+// Increase the maximum number of listeners for the process object
+process.setMaxListeners(20);
+
 // Listen for termination signals
 process.on("SIGTERM", () => shutdownGracefully("SIGTERM"));
 process.on("SIGINT", () => shutdownGracefully("SIGINT"));
