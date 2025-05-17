@@ -1,12 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
-import { CreateTeamUseCase } from '../../application/useCases/createTeam/CreateTeamUseCase';
-import { ListTeamsUseCase } from '../../application/useCases/listTeams/ListTeamsUseCase';
-import { UpdateTeamUseCase } from '../../application/useCases/updateTeam/UpdateTeamUseCase';
-import { DeleteTeamUseCase } from '../../application/useCases/deleteTeam/DeleteTeamUseCase';
+import { Request, Response, NextFunction } from "express";
+import { CreateTeamUseCase } from "../../application/useCases/createTeam/CreateTeamUseCase";
+import { ListTeamsUseCase } from "../../application/useCases/listTeams/ListTeamsUseCase";
+import { UpdateTeamUseCase } from "../../application/useCases/updateTeam/UpdateTeamUseCase";
+import { DeleteTeamUseCase } from "../../application/useCases/deleteTeam/DeleteTeamUseCase";
 
 /**
  * Teams Controller
- * 
+ *
  * Handles HTTP requests related to team operations.
  * Request validation occurs in middleware before reaching these methods.
  * By the time these methods are called, request data is already validated
@@ -17,7 +17,7 @@ export class TeamsController {
     private createTeamUseCase: CreateTeamUseCase,
     private listTeamsUseCase: ListTeamsUseCase,
     private updateTeamUseCase: UpdateTeamUseCase,
-    private deleteTeamUseCase: DeleteTeamUseCase
+    private deleteTeamUseCase: DeleteTeamUseCase,
   ) {}
 
   /**
@@ -27,7 +27,7 @@ export class TeamsController {
   async createTeam(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const result = await this.createTeamUseCase.execute(req.body);
-      res.status(201).json(result);
+      res.status(200).json(result);
     } catch (error) {
       next(error);
     }
@@ -73,4 +73,4 @@ export class TeamsController {
       next(error);
     }
   }
-} 
+}
