@@ -1,4 +1,4 @@
-import { PrismaClient } from "@/infrastructure/database/generated/prisma";
+import { PrismaClient } from "../../infrastructure/database/generated/prisma";
 import { KudoCardPrismaRepository } from "./infrastructure/repositories/KudoCardsPrismaRepository";
 import { CreateKudoCardsUseCase } from "./application/useCases/createKudoCards/CreateKudoCardsUseCase";
 import { ListKudoCardsUseCase } from "./application/useCases/listKudoCards/ListKudoCardsUseCase";

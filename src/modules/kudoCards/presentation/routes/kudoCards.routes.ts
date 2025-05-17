@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { PrismaClient } from "@/infrastructure/database/generated/prisma";
+import { PrismaClient } from "../../../../infrastructure/database/generated/prisma";
 import { KudoCardController } from "../controllers/kudoCards.controller";
 import { CreateKudoCardsUseCase } from "../../application/useCases/createKudoCards/CreateKudoCardsUseCase";
 import { ListKudoCardsUseCase } from "../../application/useCases/listKudoCards/ListKudoCardsUseCase";
@@ -7,7 +7,7 @@ import { KudoCardPrismaRepository } from "../../infrastructure/repositories/Kudo
 import { validateRequest } from "../middleware/validateRequest";
 import { createKudoCardsSchema } from "../validation/createKudoCardsSchema";
 import { listKudoCardsSchema } from "../validation/listKudoCardsSchema";
-import { authenticateJwt, authorizeRoles } from "@/modules/auth/presentation/middleware/jwtStrategy";
+import { authenticateJwt, authorizeRoles } from "../../../auth/presentation/middleware/jwtStrategy";
 
 // Export a function to create the router (following the same pattern as other modules)
 export const createKudoCardRouter = (kudoCardController: KudoCardController) => {
