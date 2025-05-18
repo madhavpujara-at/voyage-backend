@@ -28,11 +28,7 @@ const loginUserUseCase = new LoginUserUseCase(userRepository);
 const logoutUserUseCase = new LogoutUserUseCase(tokenBlacklistService);
 
 // Create controller
-const authController = new AuthController(
-  registerUserUseCase,
-  loginUserUseCase,
-  logoutUserUseCase
-);
+const authController = new AuthController(registerUserUseCase, loginUserUseCase, logoutUserUseCase);
 
 // Initialize JWT strategy
 import { initializeJwtStrategy } from "../middleware/jwtStrategy";

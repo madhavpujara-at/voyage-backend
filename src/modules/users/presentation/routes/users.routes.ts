@@ -68,30 +68,12 @@ const usersController = new UsersController(updateUserRoleUseCase, listUsersByRo
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UserResponse'
- *       '401':
- *         description: Unauthorized.
+ *       '400':
+ *         description: Invalid input data
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/BaseErrorResponse'
- *       '403':
- *         description: 'Forbidden: Insufficient permissions.'
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/BaseErrorResponse'
- *       '404':
- *         description: User not found.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/BaseErrorResponse'
- *       '500':
- *         description: Internal server error.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/BaseErrorResponse'
+ *               $ref: '#/components/schemas/ValidationErrorResponse'
  */
 router.patch(
   "/:userId/role",
@@ -124,15 +106,25 @@ router.patch(
  *         description: The role to filter users by. If omitted, all users are listed.
  *     responses:
  *       '200':
- *         description: A list of users.
+ *         description: A list of users retrieved successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/ListUsersResponse'
- *       '401':
- *         $ref: '#/components/responses/Unauthorized'
- *       '403':
- *         $ref: '#/components/responses/Forbidden'
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/UserResponse'
+ *       '400':
+ *         description: Bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ValidationErrorResponse'
  */
 router.get(
   "/",
