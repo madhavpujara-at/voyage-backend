@@ -5,7 +5,7 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "npm run prisma:generate && tsc && cpx \"src/infrastructure/database/generated/prisma/**/*\" \"dist/infrastructure/database/generated/prisma\"",
-    "start": "npm run prisma:migrate:prod && npm run create:admin && npm run start:prod",
+    "start": "npm run prisma:migrate:prod && npm run create:admin && npm run seed:data && npm run start:prod",
     "start:dev": "nodemon",
     "start:prod": "node dist/server.js",
     "test": "jest",
