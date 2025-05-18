@@ -37,6 +37,7 @@ export class KudoCardPrismaRepository implements IKudoCardRepository {
             select: {
               id: true,
               email: true,
+              name: true,
             },
           },
           team: {
@@ -66,6 +67,7 @@ export class KudoCardPrismaRepository implements IKudoCardRepository {
         result.team.name,
         result.category.name,
         result.giver.email,
+        result.giver.name,
       );
     } catch (error) {
       console.error("Error in saveEntity:", error);
@@ -97,6 +99,7 @@ export class KudoCardPrismaRepository implements IKudoCardRepository {
             select: {
               id: true,
               email: true,
+              name: true,
             },
           },
           team: {
@@ -126,6 +129,7 @@ export class KudoCardPrismaRepository implements IKudoCardRepository {
         result.team.name,
         result.category.name,
         result.giver.email,
+        result.giver.name,
       );
     } catch (error) {
       console.error("Error creating kudo card:", error);
@@ -141,6 +145,7 @@ export class KudoCardPrismaRepository implements IKudoCardRepository {
           select: {
             id: true,
             email: true,
+            name: true,
           },
         },
         team: {
@@ -174,6 +179,7 @@ export class KudoCardPrismaRepository implements IKudoCardRepository {
       result.team.name,
       result.category.name,
       result.giver.email,
+      result.giver.name,
     );
   }
 
@@ -246,6 +252,7 @@ export class KudoCardPrismaRepository implements IKudoCardRepository {
           select: {
             id: true,
             email: true,
+            name: true,
           },
         },
         team: {
@@ -278,6 +285,7 @@ export class KudoCardPrismaRepository implements IKudoCardRepository {
           result.team.name,
           result.category.name,
           result.giver.email,
+          result.giver.name,
         ),
     );
   }

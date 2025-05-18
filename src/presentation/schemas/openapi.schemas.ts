@@ -92,6 +92,70 @@
  *               description: JWT access token for the authenticated user.
  *             user:
  *               $ref: '#/components/schemas/LoginUserOutput'
+ *     KudoCardResponse:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *           description: Unique identifier of the kudo card.
+ *         message:
+ *           type: string
+ *           description: The message content of the kudo card.
+ *         recipientName:
+ *           type: string
+ *           description: Name of the person receiving the kudo.
+ *         giverId:
+ *           type: string
+ *           format: uuid
+ *           description: ID of the user who gave the kudo.
+ *         giverEmail:
+ *           type: string
+ *           format: email
+ *           description: Email of the user who gave the kudo.
+ *         giverName:
+ *           type: string
+ *           description: Name of the user who gave the kudo.
+ *         teamId:
+ *           type: string
+ *           format: uuid
+ *           description: ID of the team associated with the kudo.
+ *         teamName:
+ *           type: string
+ *           description: Name of the team associated with the kudo.
+ *         categoryId:
+ *           type: string
+ *           format: uuid
+ *           description: ID of the category for this kudo.
+ *         categoryName:
+ *           type: string
+ *           description: Name of the category for this kudo.
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           description: Timestamp when the kudo card was created.
+ *     CreateKudoCardInput:
+ *       type: object
+ *       required:
+ *         - recipientName
+ *         - teamId
+ *         - categoryId
+ *         - message
+ *       properties:
+ *         recipientName:
+ *           type: string
+ *           description: Name of the person receiving the kudo.
+ *         teamId:
+ *           type: string
+ *           format: uuid
+ *           description: ID of the team associated with the kudo.
+ *         categoryId:
+ *           type: string
+ *           format: uuid
+ *           description: ID of the category for this kudo.
+ *         message:
+ *           type: string
+ *           description: The message content of the kudo card.
  *     BaseErrorResponse:
  *       type: object
  *       required:

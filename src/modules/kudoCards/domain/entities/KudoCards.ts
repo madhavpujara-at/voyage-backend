@@ -11,6 +11,7 @@ export class KudoCard {
     private readonly teamName?: string,
     private readonly categoryName?: string,
     private readonly giverEmail?: string,
+    private readonly giverName?: string,
   ) {
     this.validateMessage(message);
     this.validateRecipientName(recipientName);
@@ -90,6 +91,9 @@ export class KudoCard {
   public getGiverEmail(): string | undefined {
     return this.giverEmail;
   }
+  public getGiverName(): string | undefined {
+    return this.giverName;
+  }
 
   // Data conversion
   public toObject() {
@@ -105,6 +109,7 @@ export class KudoCard {
       teamName: this.teamName,
       categoryName: this.categoryName,
       giverEmail: this.giverEmail,
+      giverName: this.giverName,
     };
   }
 }

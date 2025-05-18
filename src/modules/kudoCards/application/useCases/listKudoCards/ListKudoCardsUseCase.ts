@@ -29,6 +29,7 @@ export class ListKudoCardsUseCase {
         recipientName: card.getRecipientName(),
         giverId: card.getGiverId(),
         giverEmail: card.getGiverEmail(),
+        giverName: card.getGiverName(),
         teamId: card.getTeamId(),
         teamName: card.getTeamName(),
         categoryId: card.getCategoryId(),

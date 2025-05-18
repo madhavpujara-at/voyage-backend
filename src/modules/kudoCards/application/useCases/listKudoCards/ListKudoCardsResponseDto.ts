@@ -7,6 +7,7 @@ export interface KudoCardsDto {
   recipientName: string;
   giverId: string;
   giverEmail?: string;
+  giverName?: string;
   teamId: string;
   teamName?: string;
   categoryId: string;
