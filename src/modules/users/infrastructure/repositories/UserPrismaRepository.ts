@@ -38,6 +38,15 @@ export class UserPrismaRepository implements IUserRepository {
     );
   }
 
+  async findAll(): Promise<User[]> {
+    const usersData = await this.prisma.user.findMany({
+      select: { id: true, name: true, email: true, role: true, createdAt: true, updatedAt: true, password: true },
+    });
+    return usersData.map(
+      (ud) => new User(ud.id, ud.email, ud.name, ud.password, ud.role as UserRole, ud.createdAt, ud.updatedAt),
+    );
+  }
+
   async findUsersByRole(role: UserRole): Promise<User[]> {
     const usersData = await this.prisma.user.findMany({
       where: { role: role as PrismaUserRoleEnum },

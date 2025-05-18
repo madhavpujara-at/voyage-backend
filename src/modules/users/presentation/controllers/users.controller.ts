@@ -1,14 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import { UpdateUserRoleUseCase } from "../../application/useCases/updateUserRole/UpdateUserRoleUseCase";
 import pinoLoggerFactory from "../../../../shared/logger/pino-logger";
-import { ListTeamMembersUseCase } from "../../application/useCases/listTeamMembers/ListTeamMembersUseCase";
+import { ListUsersByRoleUseCase } from "../../application/useCases/listUsersByRole/ListUsersByRoleUseCase";
+import { UserRole } from "../../../auth/domain/entities/User";
 
 const logger = pinoLoggerFactory.createLogger("UsersController");
 
 export class UsersController {
   constructor(
     private updateUserRoleUseCase: UpdateUserRoleUseCase,
-    private listTeamMembersUseCase: ListTeamMembersUseCase,
+    private listUsersByRoleUseCase: ListUsersByRoleUseCase,
   ) {}
 
   /**
@@ -44,9 +45,16 @@ export class UsersController {
     }
   };
 
-  async listTeamMembers(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async listUsersByRole(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const result = await this.listTeamMembersUseCase.execute();
+      const role = req.query.role as UserRole | undefined;
+
+      if (role && !Object.values(UserRole).includes(role)) {
+        res.status(400).json({ message: "Invalid role value provided." });
+        return;
+      }
+
+      const result = await this.listUsersByRoleUseCase.execute({ role });
       res.status(200).json(result);
     } catch (error) {
       next(error); // Pass errors to the global error handler

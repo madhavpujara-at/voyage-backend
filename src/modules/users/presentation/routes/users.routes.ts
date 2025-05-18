@@ -2,7 +2,7 @@ import { Router } from "express";
 import { UserRole } from "../../../auth/domain/entities/User";
 import { UsersController } from "../controllers/users.controller";
 import { UpdateUserRoleUseCase } from "../../application/useCases/updateUserRole/UpdateUserRoleUseCase";
-import { ListTeamMembersUseCase } from "../../application/useCases/listTeamMembers/ListTeamMembersUseCase";
+import { ListUsersByRoleUseCase } from "../../application/useCases/listUsersByRole/ListUsersByRoleUseCase";
 import { UserPrismaRepository } from "../../infrastructure/repositories/UserPrismaRepository";
 import { authenticateJwt, authorizeRoles } from "../../../auth/presentation/middleware/jwtStrategy";
 import { validateRequest } from "../../../auth/presentation/middleware/validateRequest";
@@ -24,10 +24,10 @@ const userPrismaRepository = new UserPrismaRepository(prisma);
 
 // Initialize use cases
 const updateUserRoleUseCase = new UpdateUserRoleUseCase(userPrismaRepository);
-const listTeamMembersUseCase = new ListTeamMembersUseCase(userPrismaRepository);
+const listUsersByRoleUseCase = new ListUsersByRoleUseCase(userPrismaRepository);
 
 // Initialize controller
-const usersController = new UsersController(updateUserRoleUseCase, listTeamMembersUseCase);
+const usersController = new UsersController(updateUserRoleUseCase, listUsersByRoleUseCase);
 
 /**
  * @openapi
@@ -113,35 +113,38 @@ router.patch(
 
 /**
  * @openapi
- * /users/team-members:
+ * /users:
  *   get:
  *     tags: [Users]
- *     summary: List all team members
- *     description: Retrieves a list of all users with the role TEAM_MEMBER. Requires ADMIN privileges.
+ *     summary: List users
+ *     description: Retrieves a list of users. Can be filtered by role. If no role is provided, all users are listed. Requires ADMIN privileges.
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: role
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [TEAM_MEMBER, TECH_LEAD, ADMIN]
+ *         description: The role to filter users by. If omitted, all users are listed.
  *     responses:
  *       '200':
- *         description: A list of team members.
+ *         description: A list of users.
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 teamMembers:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/TeamMemberOutput'
+ *               $ref: '#/components/schemas/ListUsersResponse'
  *       '401':
- *         description: Unauthorized.
+ *         $ref: '#/components/responses/Unauthorized'
  *       '403':
- *         description: Forbidden. Insufficient permissions.
+ *         $ref: '#/components/responses/Forbidden'
  */
 router.get(
-  "/team-members",
+  "/",
   authenticateJwt,
   authorizeRoles([UserRole.ADMIN]),
-  usersController.listTeamMembers.bind(usersController),
+  usersController.listUsersByRole.bind(usersController),
 );
 
 export default router;
