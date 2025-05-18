@@ -11,6 +11,7 @@ import { createCategoriesModule } from "../../modules/categories";
 import { createKudoCardsModule } from "../../modules/kudoCards";
 import prisma from "../../infrastructure/database/prisma-client";
 import { createUsersModule } from "../../modules/users";
+import { createAnalyticsModule } from "../../modules/analytics";
 
 const logger = pinoLoggerFactory.createLogger("MainRouter");
 const router = Router();
@@ -43,8 +44,9 @@ router.use("/categories", categoriesModule.router);
 const kudoCardsModule = createKudoCardsModule(prisma);
 router.use("/kudoCards", kudoCardsModule.router);
 
-// Other modules to be added later
-// router.use('/analytics', analyticsRoutes);
+// Initialize and register Analytics module
+const analyticsModule = createAnalyticsModule();
+router.use("/analytics", analyticsModule.router);
 
 logger.info("Routes registered");
 

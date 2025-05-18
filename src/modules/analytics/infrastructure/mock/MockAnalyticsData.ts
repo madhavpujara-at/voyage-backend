@@ -1,0 +1,176 @@
+import { AnalyticsData } from '../../domain/types/AnalyticsData';
+
+/**
+ * Mock data for analytics in development environment
+ */
+
+export const mockWeeklyData: AnalyticsData = {
+  topIndividuals: [
+    { id: "1", name: "John Doe", kudosCount: 15 },
+    { id: "2", name: "Jane Smith", kudosCount: 12 },
+    { id: "3", name: "Robert Johnson", kudosCount: 10 },
+    { id: "4", name: "Emily Davis", kudosCount: 8 },
+    { id: "5", name: "Michael Brown", kudosCount: 7 },
+  ],
+  topTeams: [
+    { id: "1", name: "Engineering", kudosCount: 42 },
+    { id: "2", name: "Design", kudosCount: 28 },
+    { id: "3", name: "Product", kudosCount: 23 },
+    { id: "4", name: "Marketing", kudosCount: 18 },
+    { id: "5", name: "Customer Support", kudosCount: 15 },
+  ],
+  trendingWords: [
+    { word: "innovative", frequency: 24 },
+    { word: "teamwork", frequency: 21 },
+    { word: "helpful", frequency: 19 },
+    { word: "creative", frequency: 16 },
+    { word: "dedicated", frequency: 14 },
+    { word: "supportive", frequency: 12 },
+    { word: "reliable", frequency: 11 },
+  ],
+  trendingCategories: [
+    { categoryName: "Collaboration", kudosCount: 32 },
+    { categoryName: "Technical Excellence", kudosCount: 28 },
+    { categoryName: "Innovation", kudosCount: 24 },
+    { categoryName: "Customer Focus", kudosCount: 18 },
+    { categoryName: "Leadership", kudosCount: 12 },
+  ],
+};
+
+export const mockMonthlyData: AnalyticsData = {
+  topIndividuals: [
+    { id: "1", name: "Jane Smith", kudosCount: 45 },
+    { id: "2", name: "John Doe", kudosCount: 39 },
+    { id: "3", name: "Emily Davis", kudosCount: 36 },
+    { id: "4", name: "Robert Johnson", kudosCount: 32 },
+    { id: "5", name: "Sarah Miller", kudosCount: 28 },
+  ],
+  topTeams: [
+    { id: "1", name: "Engineering", kudosCount: 120 },
+    { id: "2", name: "Product", kudosCount: 95 },
+    { id: "3", name: "Design", kudosCount: 88 },
+    { id: "4", name: "Marketing", kudosCount: 72 },
+    { id: "5", name: "Sales", kudosCount: 65 },
+  ],
+  trendingWords: [
+    { word: "collaborative", frequency: 75 },
+    { word: "innovative", frequency: 68 },
+    { word: "supportive", frequency: 62 },
+    { word: "dedicated", frequency: 57 },
+    { word: "proactive", frequency: 52 },
+    { word: "thoughtful", frequency: 48 },
+    { word: "skilled", frequency: 45 },
+  ],
+  trendingCategories: [
+    { categoryName: "Collaboration", kudosCount: 110 },
+    { categoryName: "Innovation", kudosCount: 95 },
+    { categoryName: "Technical Excellence", kudosCount: 88 },
+    { categoryName: "Customer Focus", kudosCount: 75 },
+    { categoryName: "Leadership", kudosCount: 62 },
+  ],
+};
+
+export const mockYearlyData: AnalyticsData = {
+  topIndividuals: [
+    { id: "1", name: "John Doe", kudosCount: 185 },
+    { id: "2", name: "Jane Smith", kudosCount: 172 },
+    { id: "3", name: "Michael Brown", kudosCount: 163 },
+    { id: "4", name: "Emily Davis", kudosCount: 145 },
+    { id: "5", name: "Robert Johnson", kudosCount: 138 },
+  ],
+  topTeams: [
+    { id: "1", name: "Engineering", kudosCount: 520 },
+    { id: "2", name: "Product", kudosCount: 435 },
+    { id: "3", name: "Design", kudosCount: 380 },
+    { id: "4", name: "Marketing", kudosCount: 325 },
+    { id: "5", name: "Sales", kudosCount: 290 },
+  ],
+  trendingWords: [
+    { word: "innovative", frequency: 312 },
+    { word: "collaborative", frequency: 289 },
+    { word: "dedication", frequency: 265 },
+    { word: "supportive", frequency: 241 },
+    { word: "excellence", frequency: 220 },
+    { word: "leadership", frequency: 195 },
+    { word: "initiative", frequency: 182 },
+  ],
+  trendingCategories: [
+    { categoryName: "Innovation", kudosCount: 425 },
+    { categoryName: "Collaboration", kudosCount: 410 },
+    { categoryName: "Technical Excellence", kudosCount: 385 },
+    { categoryName: "Leadership", kudosCount: 310 },
+    { categoryName: "Customer Focus", kudosCount: 275 },
+  ],
+};
+
+// More detailed data for visualizations
+export const mockYearlyDataLarge: AnalyticsData = {
+  topIndividuals: [
+    { id: "user101", name: "Isabella Rossi", kudosCount: 215 },
+    { id: "user102", name: "Liam Chen", kudosCount: 203 },
+    { id: "user103", name: "Sophia Patel", kudosCount: 195 },
+    { id: "user104", name: "Noah Kim", kudosCount: 188 },
+    { id: "user105", name: "Olivia Garcia", kudosCount: 180 },
+    { id: "user106", name: "Ethan Williams", kudosCount: 172 },
+    { id: "user107", name: "Ava Rodriguez", kudosCount: 166 },
+    { id: "user108", name: "Lucas Brown", kudosCount: 160 },
+    { id: "user109", name: "Mia Jones", kudosCount: 155 },
+    { id: "user110", name: "Jackson Davis", kudosCount: 150 },
+    { id: "user111", name: "Chloe Wilson", kudosCount: 146 },
+    { id: "user112", name: "Aiden Miller", kudosCount: 142 },
+    { id: "user113", name: "Harper Taylor", kudosCount: 138 },
+    { id: "user114", name: "Elijah Anderson", kudosCount: 135 },
+    { id: "user115", name: "Evelyn Thomas", kudosCount: 130 },
+    { id: "user116", name: "James White", kudosCount: 125 },
+    { id: "user117", name: "Abigail Harris", kudosCount: 120 },
+    { id: "user118", name: "Benjamin Martin", kudosCount: 115 },
+    { id: "user119", name: "Ella Thompson", kudosCount: 110 },
+    { id: "user120", name: "Logan Clark", kudosCount: 105 },
+  ],
+  topTeams: [
+    { id: "teamA1", name: "Core Platform", kudosCount: 850 },
+    { id: "teamB2", name: "Frontend Wizards", kudosCount: 780 },
+    { id: "teamC3", name: "Data Science Gurus", kudosCount: 720 },
+    { id: "teamD4", name: "Mobile Mavericks", kudosCount: 680 },
+    { id: "teamE5", name: "API Architects", kudosCount: 650 },
+    { id: "teamF6", name: "QA Champions", kudosCount: 600 },
+    { id: "teamG7", name: "DevOps Dynamos", kudosCount: 570 },
+    { id: "teamH8", name: "UX Innovators", kudosCount: 540 },
+    { id: "teamI9", name: "Security Sentinels", kudosCount: 510 },
+    { id: "teamJ10", name: "Infrastructure Titans", kudosCount: 480 },
+  ],
+  trendingWords: [
+    { word: "performance", frequency: 450 },
+    { word: "scalability", frequency: 420 },
+    { word: "feature", frequency: 410 },
+    { word: "solution", frequency: 390 },
+    { word: "milestone", frequency: 375 },
+    { word: "impact", frequency: 360 },
+    { word: "strategy", frequency: 340 },
+    { word: "integration", frequency: 320 },
+    { word: "agile", frequency: 310 },
+    { word: "robust", frequency: 300 },
+    { word: "efficient", frequency: 290 },
+    { word: "feedback", frequency: 280 },
+    { word: "automation", frequency: 270 },
+    { word: "deployment", frequency: 260 },
+    { word: "security", frequency: 250 },
+    { word: "mentorship", frequency: 240 },
+    { word: "growth", frequency: 230 },
+    { word: "optimization", frequency: 220 },
+    { word: "quality", frequency: 210 },
+    { word: "release", frequency: 200 },
+  ],
+  trendingCategories: [
+    { categoryName: "Productivity Boost", kudosCount: 650 },
+    { categoryName: "Technical Achievement", kudosCount: 620 },
+    { categoryName: "Exceptional Teamwork", kudosCount: 590 },
+    { categoryName: "Problem Solving", kudosCount: 560 },
+    { categoryName: "Mentorship & Guidance", kudosCount: 530 },
+    { categoryName: "Process Improvement", kudosCount: 500 },
+    { categoryName: "Client Success", kudosCount: 470 },
+    { categoryName: "Innovative Thinking", kudosCount: 440 },
+    { categoryName: "Community Contribution", kudosCount: 410 },
+    { categoryName: "Reliability & Ownership", kudosCount: 380 },
+  ],
+}; 
