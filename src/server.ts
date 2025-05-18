@@ -1,5 +1,5 @@
 import express, { Application } from "express";
-import cors from "cors";
+import cors, { CorsOptions } from "cors";
 import pinoLoggerFactory from "./shared/logger/pino-logger";
 import config from "./config";
 import router from "./presentation/routes";
@@ -15,8 +15,24 @@ const logger = pinoLoggerFactory.createLogger("Server");
 // Initialize Express app
 const app: Application = express();
 
+// Define allowed origins
+const allowedOrigins = ["http://localhost:3000", "https://voyage-ui-kwerl.kinsta.app"]; // Add your domains here
+
+// CORS options
+const corsOptions = {
+  origin: (origin: string, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = "The CORS policy for this site does not allow access from the specified Origin.";
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+};
+
 // Apply middleware
-app.use(cors());
+app.use(cors(corsOptions as CorsOptions));
 app.use(express.json());
 
 // Swagger setup
