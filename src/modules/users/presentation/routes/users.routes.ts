@@ -2,10 +2,12 @@ import { Router } from "express";
 import { UserRole } from "../../../auth/domain/entities/User";
 import { UsersController } from "../controllers/users.controller";
 import { UpdateUserRoleUseCase } from "../../application/useCases/updateUserRole/UpdateUserRoleUseCase";
-import { UserPrismaRepository } from "../../../auth/infrastructure/repositories/UserPrismaRepository";
+import { ListTeamMembersUseCase } from "../../application/useCases/listTeamMembers/ListTeamMembersUseCase";
+import { UserPrismaRepository } from "../../infrastructure/repositories/UserPrismaRepository";
 import { authenticateJwt, authorizeRoles } from "../../../auth/presentation/middleware/jwtStrategy";
 import { validateRequest } from "../../../auth/presentation/middleware/validateRequest";
 import { UpdateUserRoleSchema } from "../validation/updateUserRoleSchema";
+import { PrismaClient } from "../../../../infrastructure/database/generated/prisma";
 
 /**
  * @openapi
@@ -14,17 +16,18 @@ import { UpdateUserRoleSchema } from "../validation/updateUserRoleSchema";
  *   description: User management and operations. Requires ADMIN privileges for some operations.
  */
 
-// Initialize router
 const router = Router();
+const prisma = new PrismaClient();
 
 // Initialize repositories
-const userPrismaRepository = new UserPrismaRepository();
+const userPrismaRepository = new UserPrismaRepository(prisma);
 
 // Initialize use cases
 const updateUserRoleUseCase = new UpdateUserRoleUseCase(userPrismaRepository);
+const listTeamMembersUseCase = new ListTeamMembersUseCase(userPrismaRepository);
 
 // Initialize controller
-const usersController = new UsersController(updateUserRoleUseCase);
+const usersController = new UsersController(updateUserRoleUseCase, listTeamMembersUseCase);
 
 /**
  * @openapi
@@ -96,7 +99,6 @@ const usersController = new UsersController(updateUserRoleUseCase);
  *             schema:
  *               $ref: '#/components/schemas/BaseErrorResponse'
  */
-// Define routes
 router.patch(
   "/:userId/role",
   authenticateJwt,
@@ -107,6 +109,39 @@ router.patch(
   },
   validateRequest(UpdateUserRoleSchema),
   usersController.updateRole,
+);
+
+/**
+ * @openapi
+ * /users/team-members:
+ *   get:
+ *     tags: [Users]
+ *     summary: List all team members
+ *     description: Retrieves a list of all users with the role TEAM_MEMBER. Requires ADMIN privileges.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       '200':
+ *         description: A list of team members.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 teamMembers:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/TeamMemberOutput'
+ *       '401':
+ *         description: Unauthorized.
+ *       '403':
+ *         description: Forbidden. Insufficient permissions.
+ */
+router.get(
+  "/team-members",
+  authenticateJwt,
+  authorizeRoles([UserRole.ADMIN]),
+  usersController.listTeamMembers.bind(usersController),
 );
 
 export default router;

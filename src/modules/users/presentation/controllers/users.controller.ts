@@ -1,11 +1,15 @@
 import { Request, Response, NextFunction } from "express";
 import { UpdateUserRoleUseCase } from "../../application/useCases/updateUserRole/UpdateUserRoleUseCase";
 import pinoLoggerFactory from "../../../../shared/logger/pino-logger";
+import { ListTeamMembersUseCase } from "../../application/useCases/listTeamMembers/ListTeamMembersUseCase";
 
 const logger = pinoLoggerFactory.createLogger("UsersController");
 
 export class UsersController {
-  constructor(private updateUserRoleUseCase: UpdateUserRoleUseCase) {}
+  constructor(
+    private updateUserRoleUseCase: UpdateUserRoleUseCase,
+    private listTeamMembersUseCase: ListTeamMembersUseCase,
+  ) {}
 
   /**
    * Update a user's role (Admin only)
@@ -39,4 +43,13 @@ export class UsersController {
       next(error);
     }
   };
+
+  async listTeamMembers(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const result = await this.listTeamMembersUseCase.execute();
+      res.status(200).json(result);
+    } catch (error) {
+      next(error); // Pass errors to the global error handler
+    }
+  }
 }
