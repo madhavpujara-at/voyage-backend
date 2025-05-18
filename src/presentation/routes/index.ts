@@ -1,7 +1,6 @@
 import { Router } from "express";
 import healthRoutes from "./health.routes";
 import authRoutes from "../../modules/auth/presentation/routes/auth.routes";
-import usersRoutes from "../../modules/users/presentation/routes/users.routes";
 import pinoLoggerFactory from "../../shared/logger/pino-logger";
 import { UserPrismaRepository } from "../../modules/auth/infrastructure/repositories/UserPrismaRepository";
 import { InMemoryTokenBlacklistService } from "../../modules/auth/infrastructure/services/InMemoryTokenBlacklistService";
@@ -11,6 +10,7 @@ import { createTeamsModule } from "../../modules/teams";
 import { createCategoriesModule } from "../../modules/categories";
 import { createKudoCardsModule } from "../../modules/kudoCards";
 import prisma from "../../infrastructure/database/prisma-client";
+import { createUsersModule } from "../../modules/users";
 
 const logger = pinoLoggerFactory.createLogger("MainRouter");
 const router = Router();
@@ -26,7 +26,10 @@ initializeJwtStrategy(userRepository, tokenBlacklistService);
 // Register all routes here
 router.use("/health", healthRoutes);
 router.use("/auth", authRoutes);
-router.use("/users", usersRoutes);
+
+// Initialize and register Users module with the new factory
+const usersModule = createUsersModule(prisma);
+router.use("/users", usersModule.router);
 
 // Initialize and register Teams module
 const teamsModule = createTeamsModule(prisma);

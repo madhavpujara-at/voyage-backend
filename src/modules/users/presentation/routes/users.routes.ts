@@ -35,7 +35,7 @@ const usersController = new UsersController(updateUserRoleUseCase, listUsersByRo
  *   put:
  *     tags: [Users]
  *     summary: Update a user's role
- *     description: Allows an ADMIN to change the role of a specified user. Requires JWT authentication.
+ *     description: Allows an ADMIN to change the role of a specified user, including upgrading to TECH_LEAD/ADMIN or downgrading to TEAM_MEMBER. Requires JWT authentication.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -52,21 +52,15 @@ const usersController = new UsersController(updateUserRoleUseCase, listUsersByRo
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/UpdateUserRoleInput'
- *           example:
- *             newRole: "TECH_LEAD"
  *           examples:
  *             teamMember:
- *               summary: Set user as team member
+ *               summary: Downgrade user to team member
  *               value:
  *                 newRole: "TEAM_MEMBER"
  *             techLead:
  *               summary: Set user as tech lead
  *               value:
  *                 newRole: "TECH_LEAD"
- *             admin:
- *               summary: Set user as admin
- *               value:
- *                 newRole: "ADMIN"
  *     responses:
  *       '200':
  *         description: User role updated successfully. Returns the updated user details.
