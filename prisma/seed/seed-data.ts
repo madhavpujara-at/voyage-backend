@@ -1,21 +1,35 @@
 import prisma from "../../src/infrastructure/database/prisma-client";
 import { hashPassword } from "../../src/modules/auth/application/utils/authUtils";
 import { randomUUID } from "crypto";
+import { User, Team, Category, Kudo, UserRole } from "../../src/infrastructure/database/generated/prisma";
 
 async function main() {
   console.log("Starting database seeding...");
 
-  // Clear existing data (if needed)
-  console.log("Cleaning up existing data...");
+  // Check if non-admin data already exists
+  const existingNonAdminUser = await prisma.user.findFirst({
+    where: {
+      role: { not: UserRole.ADMIN },
+    },
+  });
+
+  if (existingNonAdminUser) {
+    console.log("Non-admin user data already exists. Skipping full data seeding process.");
+    return; // Exit if data is already present
+  }
+
+  // Clear existing data (if needed) - only runs if no non-admin users were found
+  console.log("No existing non-admin user data found. Proceeding with full seed.");
+  console.log("Cleaning up existing Kudo, Category, and Team data...");
   await prisma.kudo.deleteMany();
   await prisma.category.deleteMany();
   await prisma.team.deleteMany();
-  // Don't delete users if you want to keep the admin
+  // No need to delete non-admin users here, as their absence was the condition to proceed.
 
   // Seed Users
   console.log("Seeding users...");
-  const users: any[] = [];
-  
+  const users: User[] = [];
+
   // Create 10 team members
   for (let i = 1; i <= 10; i++) {
     const userId = randomUUID();
@@ -52,16 +66,8 @@ async function main() {
 
   // Seed 7 Teams
   console.log("Seeding teams...");
-  const teamNames = [
-    "Engineering", 
-    "Design", 
-    "Product", 
-    "Marketing", 
-    "Customer Support", 
-    "Sales", 
-    "Operations"
-  ];
-  const teams: any[] = [];
+  const teamNames = ["Engineering", "Design", "Product", "Marketing", "Customer Support", "Sales", "Operations"];
+  const teams: Team[] = [];
 
   for (const name of teamNames) {
     const teamId = randomUUID();
@@ -79,15 +85,15 @@ async function main() {
   // Seed 7 Categories
   console.log("Seeding categories...");
   const categoryNames = [
-    "Team Player", 
-    "Innovation", 
-    "Leadership", 
-    "Problem Solving", 
+    "Team Player",
+    "Innovation",
+    "Leadership",
+    "Problem Solving",
     "Customer Focus",
     "Quality Excellence",
-    "Going Above and Beyond"
+    "Going Above and Beyond",
   ];
-  const categories: any[] = [];
+  const categories: Category[] = [];
 
   for (const name of categoryNames) {
     const categoryId = randomUUID();
@@ -124,9 +130,9 @@ async function main() {
     "Thank you for the thoughtful code review.",
     "You made a complex problem look easy.",
     "Your commitment to quality is exemplary.",
-    "The way you collaborate with others is inspiring."
+    "The way you collaborate with others is inspiring.",
   ];
-  
+
   const recipientNames = [
     "John Smith",
     "Sarah Johnson",
@@ -147,10 +153,10 @@ async function main() {
     "Richard Young",
     "Michelle Allen",
     "Joseph King",
-    "Patricia Walker"
+    "Patricia Walker",
   ];
 
-  const kudos: any[] = [];
+  const kudos: Kudo[] = [];
 
   // Create 100 random kudos
   for (let i = 0; i < 100; i++) {
@@ -160,7 +166,7 @@ async function main() {
     const randomCategory = categories[Math.floor(Math.random() * categories.length)];
     const randomMessage = kudoMessages[Math.floor(Math.random() * kudoMessages.length)];
     const randomRecipient = recipientNames[Math.floor(Math.random() * recipientNames.length)];
-    
+
     const kudo = await prisma.kudo.create({
       data: {
         id: kudoId,
@@ -171,7 +177,7 @@ async function main() {
         categoryId: randomCategory.id,
       },
     });
-    
+
     kudos.push(kudo);
   }
 
@@ -186,4 +192,4 @@ main()
   })
   .finally(async () => {
     await prisma.$disconnect();
-  }); 
+  });
